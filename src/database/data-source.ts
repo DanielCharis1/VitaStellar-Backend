@@ -14,9 +14,7 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_NAME || process.env.DATABASE_NAME || 'vitastellar',
   synchronize: false,
   logging: process.env.NODE_ENV === 'development' ? ['query', 'error'] : ['error'],
-  entities: [
-    __dirname + '/../**/*.entity{.ts,.js}',
-  ],
+  entities: [__dirname + '/../**/*.entity{.ts,.js}'],
   migrations: [__dirname + '/migrations/*{.ts,.js}'],
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
 });

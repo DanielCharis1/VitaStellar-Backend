@@ -14,15 +14,17 @@ import { QueueService } from '@/shared/queue/queue.service';
 import { AdminService } from './services/admin.service';
 import { AdminUsersService } from './services/admin-users.service';
 import { User } from '@/entities/user.entity';
+import { HealthTask } from '@/tasks/entities/health-task.entity';
 import { TaskCompletion } from '@/tasks/entities/task-completion.entity';
 import { RewardTransaction } from '@/rewards/entities/reward-transaction.entity';
 import { TasksScheduler } from '@/tasks/tasks.scheduler';
+import { TasksService } from '@/tasks/tasks.service';
 import { RewardsScheduler } from '@/rewards/rewards.scheduler';
 import { ReportsModule } from '@modules/reports/reports.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, TaskCompletion, RewardTransaction]),
+    TypeOrmModule.forFeature([User, TaskCompletion, RewardTransaction, HealthTask]),
     AuditModule,
     TaskAssignmentModule,
     HealthTasksModule,
@@ -36,6 +38,7 @@ import { ReportsModule } from '@modules/reports/reports.module';
     AdminService,
     AdminUsersService,
     TasksScheduler,
+    TasksService,
     RewardsScheduler,
     QueueService,
     CacheModule,

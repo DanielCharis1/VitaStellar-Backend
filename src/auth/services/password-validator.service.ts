@@ -61,10 +61,7 @@ export class PasswordValidatorService implements ValidatorConstraintInterface {
   /**
    * Main validation method for class-validator
    */
-  validate(
-    password: string,
-    validationArguments?: ValidationArguments,
-  ): boolean {
+  validate(password: string, validationArguments?: ValidationArguments): boolean {
     const result = this.validatePassword(password);
     return result.isValid;
   }
@@ -81,7 +78,7 @@ export class PasswordValidatorService implements ValidatorConstraintInterface {
    */
   validatePassword(
     password: string,
-    config?: Partial<PasswordStrengthConfig>,
+    config?: Partial<PasswordStrengthConfig>
   ): PasswordValidationResult {
     const finalConfig = { ...this.defaultConfig, ...config };
     const errors: PasswordValidationError[] = [];
@@ -146,10 +143,7 @@ export class PasswordValidatorService implements ValidatorConstraintInterface {
     }
 
     // Common password check
-    if (
-      finalConfig.enableCommonPasswordCheck &&
-      this.isCommonPassword(password)
-    ) {
+    if (finalConfig.enableCommonPasswordCheck && this.isCommonPassword(password)) {
       errors.push({
         type: PasswordErrorType.COMMON_PASSWORD,
         message: 'Password is too common and easily guessable',
@@ -199,8 +193,7 @@ export class PasswordValidatorService implements ValidatorConstraintInterface {
     // Ensure score is within 0-100 range
     score = Math.max(0, Math.min(100, score));
 
-    const isValid =
-      errors.filter((error) => error.severity === 'error').length === 0;
+    const isValid = errors.filter((error) => error.severity === 'error').length === 0;
 
     return {
       isValid,
@@ -212,10 +205,7 @@ export class PasswordValidatorService implements ValidatorConstraintInterface {
   /**
    * Quick validation check (boolean only)
    */
-  isStrongPassword(
-    password: string,
-    config?: Partial<PasswordStrengthConfig>,
-  ): boolean {
+  isStrongPassword(password: string, config?: Partial<PasswordStrengthConfig>): boolean {
     return this.validatePassword(password, config).isValid;
   }
 
@@ -230,7 +220,7 @@ export class PasswordValidatorService implements ValidatorConstraintInterface {
    * Get password strength category
    */
   getPasswordStrengthCategory(
-    password: string,
+    password: string
   ): 'very_weak' | 'weak' | 'fair' | 'good' | 'strong' | 'very_strong' {
     const score = this.getPasswordStrength(password);
 

@@ -30,7 +30,7 @@ export class AdminController {
     private readonly tasksScheduler: TasksScheduler,
     private readonly rewardsScheduler: RewardsScheduler,
     private readonly reportsService: ReportsService,
-    private readonly cacheService: CacheService,
+    private readonly cacheService: CacheService
   ) {}
 
   @Get('dashboard/system')
@@ -44,9 +44,13 @@ export class AdminController {
   @ApiOperation({ summary: 'Get overall dashboard statistics' })
   @ApiResponse({ status: 200, description: 'Dashboard statistics retrieved successfully' })
   async getStats() {
-    return this.cacheService.remember('admin_dashboard_stats', async () => {
-      return this.adminService.getDashboardStats();
-    }, 300);
+    return this.cacheService.remember(
+      'admin_dashboard_stats',
+      async () => {
+        return this.adminService.getDashboardStats();
+      },
+      300
+    );
   }
 
   @Get('dashboard/tasks')
@@ -94,7 +98,7 @@ export class AdminController {
   async getHealthSummary(
     @Query('period') period: string = 'daily',
     @Query('format') format: string = 'json',
-    @Res() res: Response,
+    @Res() res: Response
   ) {
     const summary = await this.reportsService.getHealthSummary(period);
     if (format === 'csv') {
@@ -102,7 +106,7 @@ export class AdminController {
       res.setHeader('Content-Type', 'text/csv; charset=utf-8');
       res.setHeader(
         'Content-Disposition',
-        `attachment; filename="health-summary-${new Date().toISOString().split('T')[0]}.csv"`,
+        `attachment; filename="health-summary-${new Date().toISOString().split('T')[0]}.csv"`
       );
       res.send(csv);
       return;

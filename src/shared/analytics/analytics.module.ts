@@ -12,10 +12,7 @@ import { TaskCompletion } from '../../tasks/entities/task-completion.entity';
 import { HealthTask } from '../../tasks/entities/health-task.entity';
 
 @Module({
-  imports: [
-    ConfigModule,
-    TypeOrmModule.forFeature([TaskCompletion, HealthTask]),
-  ],
+  imports: [ConfigModule, TypeOrmModule.forFeature([TaskCompletion, HealthTask])],
   providers: [
     AnalyticsService,
     TaskAnalyticsService,
@@ -25,7 +22,7 @@ import { HealthTask } from '../../tasks/entities/health-task.entity';
         new ConsoleAnalyticsProvider(),
         new ExternalAnalyticsProvider(
           configService.get<string>('ANALYTICS_API_KEY'),
-          configService.get<string>('ANALYTICS_ENDPOINT', 'https://analytics.example.com/track'),
+          configService.get<string>('ANALYTICS_ENDPOINT', 'https://analytics.example.com/track')
         ),
       ],
       inject: [ConfigService],

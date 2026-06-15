@@ -14,14 +14,25 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiConsumes, ApiBody, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiConsumes,
+  ApiBody,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Request } from 'express';
 import { HealthTasksService } from './health-tasks.service';
 import { UpdateHealthTaskDto } from '../../common/dtos/update-health-task.dto';
 import { CreateHealthTaskDto } from '../../common/dtos/create-health-task.dto';
 import { ArchiveService } from './services/archive.service';
-import { CompletionService, MarkCompleteDto, MarkIncompleteDto } from './services/completion.service';
+import {
+  CompletionService,
+  MarkCompleteDto,
+  MarkIncompleteDto,
+} from './services/completion.service';
 import { AnalyticsService } from './services/analytics.service';
 import { TaskSearchService } from './services/task-search.service';
 import { AttachmentsService } from './services/attachments.service';
@@ -29,9 +40,7 @@ import { DuplicationService } from './services/duplication.service';
 import { SearchTasksDto } from './dto/search-tasks.dto';
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import {
-  TaskAnalyticsService,
-} from '../../shared/analytics/task-analytics.service';
+import { TaskAnalyticsService } from '../../shared/analytics/task-analytics.service';
 
 // Interface to ensure type safety for the request user
 interface AuthenticatedRequest extends Request {
@@ -60,12 +69,12 @@ export class HealthTasksController {
     private readonly searchService: TaskSearchService,
     private readonly attachmentsService: AttachmentsService,
     private readonly duplicationService: DuplicationService,
-    private readonly taskAnalyticsService: TaskAnalyticsService,
+    private readonly taskAnalyticsService: TaskAnalyticsService
   ) {}
 
   @Get()
   @ApiOperation({ summary: 'Get user health tasks with filters and pagination' })
-  @ApiResponse({ status: 200, description: 'Paginated list of the caller\'s health tasks' })
+  @ApiResponse({ status: 200, description: "Paginated list of the caller's health tasks" })
   @ApiResponse({ status: 401, description: 'Missing or invalid bearer token' })
   async findAll(
     @Req() req: AuthenticatedRequest,
@@ -77,7 +86,7 @@ export class HealthTasksController {
     @Query('page') page?: number,
     @Query('limit') limit?: number,
     @Query('sortBy') sortBy?: string,
-    @Query('sortOrder') sortOrder?: 'asc' | 'desc',
+    @Query('sortOrder') sortOrder?: 'asc' | 'desc'
   ) {
     return { message: 'User tasks will be available in a future update' };
   }
@@ -137,7 +146,10 @@ export class HealthTasksController {
 
   @Post('archive/run')
   @ApiOperation({ summary: 'Run auto-archive for old completed tasks' })
-  @ApiResponse({ status: 200, description: 'Auto-archive sweep completed; returns the count of archived tasks' })
+  @ApiResponse({
+    status: 200,
+    description: 'Auto-archive sweep completed; returns the count of archived tasks',
+  })
   @ApiResponse({ status: 401, description: 'Missing or invalid bearer token' })
   async runAutoArchive() {
     const archivedCount = await this.archiveService.autoArchiveOldCompletedTasks();
@@ -189,7 +201,7 @@ export class HealthTasksController {
   async completeTask(
     @Param('id') id: string,
     @Body() dto: MarkCompleteDto,
-    @Req() req: AuthenticatedRequest,
+    @Req() req: AuthenticatedRequest
   ) {
     dto.taskId = id;
     return this.completionService.markTaskComplete(req.user.userId, dto);
@@ -204,7 +216,7 @@ export class HealthTasksController {
   async markTaskIncomplete(
     @Param('id') id: string,
     @Body() dto: MarkIncompleteDto,
-    @Req() req: AuthenticatedRequest,
+    @Req() req: AuthenticatedRequest
   ) {
     dto.taskId = id;
     return this.completionService.markTaskIncomplete(req.user.userId, dto);
@@ -215,10 +227,7 @@ export class HealthTasksController {
   @ApiResponse({ status: 200, description: 'Completion history entries for the task' })
   @ApiResponse({ status: 401, description: 'Missing or invalid bearer token' })
   @ApiResponse({ status: 404, description: 'Task not found' })
-  async getCompletionHistory(
-    @Param('id') id: string,
-    @Req() req: AuthenticatedRequest,
-  ) {
+  async getCompletionHistory(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
     return this.completionService.getCompletionHistory(req.user.userId, id);
   }
 
@@ -272,11 +281,7 @@ export class HealthTasksController {
       throw new ForbiddenException('Forbidden');
     }
 
-    const updated = await this.healthTasksService.update(
-      id,
-      body,
-      req.user.userId,
-    );
+    const updated = await this.healthTasksService.update(id, body, req.user.userId);
     return updated;
   }
 
@@ -389,7 +394,10 @@ export class HealthTasksController {
 
   @Get('analytics/trends')
   @ApiOperation({ summary: 'Get task completion trends' })
-  @ApiResponse({ status: 200, description: 'Daily task completion counts over the requested window' })
+  @ApiResponse({
+    status: 200,
+    description: 'Daily task completion counts over the requested window',
+  })
   @ApiResponse({ status: 400, description: 'Invalid query parameters' })
   @ApiResponse({ status: 401, description: 'Missing or invalid bearer token' })
   async getTrends(@Query('days') days: number = 7) {
@@ -428,7 +436,7 @@ export class HealthTasksController {
     @Query('period') period?: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
-    @Query('scope') scope?: 'me' | 'global',
+    @Query('scope') scope?: 'me' | 'global'
   ) {
     const userId = scope === 'global' && req.user.role === 'ADMIN' ? undefined : req.user.userId;
     return this.taskAnalyticsService.getStats({

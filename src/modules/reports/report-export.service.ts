@@ -10,7 +10,7 @@ export class ReportExportService {
 
   constructor(
     @InjectRepository(RewardTransaction)
-    private readonly rewardTransactionRepository: Repository<RewardTransaction>,
+    private readonly rewardTransactionRepository: Repository<RewardTransaction>
   ) {}
 
   streamRewardsCsv(userId?: string): PassThrough {

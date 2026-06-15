@@ -1,5 +1,15 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsOptional, IsEnum, IsBoolean, IsObject, IsNumber, Matches, Min, Max } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsEnum,
+  IsBoolean,
+  IsObject,
+  IsNumber,
+  Matches,
+  Min,
+  Max,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 // Theme and NotificationType enums are defined locally until the entity is moved
 export enum Theme {

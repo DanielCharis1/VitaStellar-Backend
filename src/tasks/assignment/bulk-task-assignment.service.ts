@@ -24,7 +24,7 @@ export class BulkTaskAssignmentService {
     private readonly taskRepo: Repository<HealthTask>,
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
-    private readonly taskAssignmentService: TaskAssignmentService,
+    private readonly taskAssignmentService: TaskAssignmentService
   ) {}
 
   validateBulkAssignPayload(userIds: string[], taskIds: string[]): void {
@@ -34,7 +34,7 @@ export class BulkTaskAssignmentService {
 
     if (userIds.length > MAX_BULK_ASSIGN_USERS) {
       throw new BadRequestException(
-        `Cannot assign tasks to more than ${MAX_BULK_ASSIGN_USERS} users at once`,
+        `Cannot assign tasks to more than ${MAX_BULK_ASSIGN_USERS} users at once`
       );
     }
   }
@@ -42,7 +42,7 @@ export class BulkTaskAssignmentService {
   async processBulkAssignment(
     userIds: string[],
     taskIds: string[],
-    assignedDate?: string,
+    assignedDate?: string
   ): Promise<BulkAssignResult> {
     const date = assignedDate ?? this.getToday();
     const tasks = await this.taskRepo.find({
@@ -71,8 +71,7 @@ export class BulkTaskAssignmentService {
         await this.assignTasksToUser(user, tasks, date);
         result.processed += 1;
       } catch (error) {
-        const message =
-          error instanceof Error ? error.message : 'Assignment failed';
+        const message = error instanceof Error ? error.message : 'Assignment failed';
         this.logger.error(`Bulk assign failed for user ${userId}: ${message}`);
         result.errors.push({ userId, message });
       }
@@ -84,7 +83,7 @@ export class BulkTaskAssignmentService {
   private async assignTasksToUser(
     user: User,
     tasks: HealthTask[],
-    assignedDate: string,
+    assignedDate: string
   ): Promise<void> {
     let assignment = await this.assignmentRepo.findOne({
       where: { user: { id: user.id }, assignedDate },
@@ -99,10 +98,7 @@ export class BulkTaskAssignmentService {
       });
     } else {
       const existingIds = new Set(assignment.tasks.map((task) => task.id));
-      const merged = [
-        ...assignment.tasks,
-        ...tasks.filter((task) => !existingIds.has(task.id)),
-      ];
+      const merged = [...assignment.tasks, ...tasks.filter((task) => !existingIds.has(task.id))];
       assignment.tasks = merged;
     }
 

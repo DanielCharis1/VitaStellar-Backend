@@ -1,8 +1,6 @@
 import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
 
-export class AddDailyXlmEarnedToUsers1774900000000
-  implements MigrationInterface
-{
+export class AddDailyXlmEarnedToUsers1774900000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.addColumn(
       'users',
@@ -12,7 +10,7 @@ export class AddDailyXlmEarnedToUsers1774900000000
         precision: 10,
         scale: 2,
         default: 0,
-      }),
+      })
     );
   }
 

@@ -13,7 +13,7 @@ export class UserSearchService {
 
   constructor(
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    private readonly userRepository: Repository<User>
   ) {}
 
   /**
@@ -23,7 +23,7 @@ export class UserSearchService {
    */
   async searchUsers(searchDto: UserSearchDto): Promise<UserSearchResponseDto> {
     const startTime = Date.now();
-    
+
     const {
       query,
       fuzzy = true,
@@ -56,7 +56,7 @@ export class UserSearchService {
 
     // Apply search conditions
     if (query) {
-      queryBuilder = fuzzy 
+      queryBuilder = fuzzy
         ? this.applyFuzzySearch(queryBuilder, query)
         : this.applyExactSearch(queryBuilder, query);
     }
@@ -75,9 +75,9 @@ export class UserSearchService {
     const users = await queryBuilder.getMany();
 
     // Calculate relevance scores if search query is provided
-    const results = query 
+    const results = query
       ? this.calculateRelevanceScores(users, query, fuzzy)
-      : users.map(user => this.mapToSearchResult(user));
+      : users.map((user) => this.mapToSearchResult(user));
 
     // Sort by relevance score if search query is provided
     if (query && fuzzy) {
@@ -113,7 +113,7 @@ export class UserSearchService {
       preferredLanguage?: string;
       hasPhone?: boolean;
       hasAvatar?: boolean;
-    },
+    }
   ): SelectQueryBuilder<User> {
     const {
       role,
@@ -161,17 +161,17 @@ export class UserSearchService {
 
     if (hasPhone !== undefined) {
       if (hasPhone) {
-        queryBuilder.andWhere('user.phoneNumber IS NOT NULL AND user.phoneNumber != \'\'');
+        queryBuilder.andWhere("user.phoneNumber IS NOT NULL AND user.phoneNumber != ''");
       } else {
-        queryBuilder.andWhere('(user.phoneNumber IS NULL OR user.phoneNumber = \'\')');
+        queryBuilder.andWhere("(user.phoneNumber IS NULL OR user.phoneNumber = '')");
       }
     }
 
     if (hasAvatar !== undefined) {
       if (hasAvatar) {
-        queryBuilder.andWhere('user.walletAddress IS NOT NULL AND user.walletAddress != \'\'');
+        queryBuilder.andWhere("user.walletAddress IS NOT NULL AND user.walletAddress != ''");
       } else {
-        queryBuilder.andWhere('(user.walletAddress IS NULL OR user.walletAddress = \'\')');
+        queryBuilder.andWhere("(user.walletAddress IS NULL OR user.walletAddress = '')");
       }
     }
 
@@ -183,10 +183,10 @@ export class UserSearchService {
    */
   private applyExactSearch(
     queryBuilder: SelectQueryBuilder<User>,
-    query: string,
+    query: string
   ): SelectQueryBuilder<User> {
     const searchQuery = `%${query.trim()}%`;
-    
+
     queryBuilder.andWhere(
       `(user.email ILIKE :searchQuery OR 
         user.firstName ILIKE :searchQuery OR 
@@ -203,10 +203,10 @@ export class UserSearchService {
    */
   private applyFuzzySearch(
     queryBuilder: SelectQueryBuilder<User>,
-    query: string,
+    query: string
   ): SelectQueryBuilder<User> {
     const trimmedQuery = query.trim();
-    const searchTerms = trimmedQuery.split(/\s+/).filter(term => term.length > 0);
+    const searchTerms = trimmedQuery.split(/\s+/).filter((term) => term.length > 0);
 
     // If query contains multiple words, treat them as separate search terms
     if (searchTerms.length > 1) {
@@ -221,17 +221,20 @@ export class UserSearchService {
       });
 
       const whereClause = conditions.join(' AND ');
-      const parameters = searchTerms.reduce((params, term, index) => {
-        params[`searchTerm${index}`] = `%${term}%`;
-        return params;
-      }, {} as Record<string, string>);
+      const parameters = searchTerms.reduce(
+        (params, term, index) => {
+          params[`searchTerm${index}`] = `%${term}%`;
+          return params;
+        },
+        {} as Record<string, string>
+      );
 
       queryBuilder.andWhere(`(${whereClause})`, parameters);
     } else {
       // Single term search - use multiple fuzzy matching strategies
       const singleTerm = searchTerms[0];
       const fuzzyTerm = `%${singleTerm}%`;
-      
+
       queryBuilder.andWhere(
         `(user.email ILIKE :fuzzyTerm OR 
           user.firstName ILIKE :fuzzyTerm OR 
@@ -256,7 +259,7 @@ export class UserSearchService {
   private applySorting(
     queryBuilder: SelectQueryBuilder<User>,
     sortBy: string,
-    sortOrder: SortOrder,
+    sortOrder: SortOrder
   ): SelectQueryBuilder<User> {
     const validSortFields = [
       'id',
@@ -293,13 +296,13 @@ export class UserSearchService {
   private calculateRelevanceScores(
     users: User[],
     query: string,
-    fuzzy: boolean,
+    fuzzy: boolean
   ): UserSearchResultDto[] {
     const searchTerms = query.trim().toLowerCase().split(/\s+/);
-    
-    return users.map(user => {
+
+    return users.map((user) => {
       const result = this.mapToSearchResult(user);
-      
+
       if (!fuzzy) {
         return result;
       }
@@ -310,7 +313,7 @@ export class UserSearchService {
       const lastName = user.lastName?.toLowerCase() || '';
       const fullName = user.fullName?.toLowerCase() || '';
 
-      searchTerms.forEach(term => {
+      searchTerms.forEach((term) => {
         // Exact matches get highest score
         if (email === term) score += 1.0;
         if (firstName === term) score += 0.9;
@@ -337,7 +340,7 @@ export class UserSearchService {
 
       // Normalize score to 0-1 range
       result.score = Math.min(score / searchTerms.length, 1.0);
-      
+
       return result;
     });
   }
@@ -362,7 +365,9 @@ export class UserSearchService {
    * Calculate Levenshtein distance between two strings
    */
   private levenshteinDistance(str1: string, str2: string): number {
-    const matrix = Array(str2.length + 1).fill(null).map(() => Array(str1.length + 1).fill(null));
+    const matrix = Array(str2.length + 1)
+      .fill(null)
+      .map(() => Array(str1.length + 1).fill(null));
 
     for (let i = 0; i <= str1.length; i++) {
       matrix[0][i] = i;
@@ -376,9 +381,9 @@ export class UserSearchService {
       for (let i = 1; i <= str1.length; i++) {
         const indicator = str1[i - 1] === str2[j - 1] ? 0 : 1;
         matrix[j][i] = Math.min(
-          matrix[j][i - 1] + 1,        // deletion
-          matrix[j - 1][i] + 1,        // insertion
-          matrix[j - 1][i - 1] + indicator, // substitution
+          matrix[j][i - 1] + 1, // deletion
+          matrix[j - 1][i] + 1, // insertion
+          matrix[j - 1][i - 1] + indicator // substitution
         );
       }
     }
@@ -421,29 +426,32 @@ export class UserSearchService {
     }
 
     const searchPattern = `%${partial}%`;
-    
+
     const users = await this.userRepository
       .createQueryBuilder('user')
       .select(['user.firstName', 'user.lastName', 'user.fullName', 'user.email'])
-      .where('user.firstName ILIKE :pattern OR user.lastName ILIKE :pattern OR user.fullName ILIKE :pattern', {
-        pattern: searchPattern,
-      })
+      .where(
+        'user.firstName ILIKE :pattern OR user.lastName ILIKE :pattern OR user.fullName ILIKE :pattern',
+        {
+          pattern: searchPattern,
+        }
+      )
       .limit(limit * 3) // Get more results to filter unique suggestions
       .getMany();
 
     const suggestions = new Set<string>();
 
-    users.forEach(user => {
+    users.forEach((user) => {
       // Add first name if it matches
       if (user.firstName && user.firstName.toLowerCase().includes(partial.toLowerCase())) {
         suggestions.add(user.firstName);
       }
-      
+
       // Add last name if it matches
       if (user.lastName && user.lastName.toLowerCase().includes(partial.toLowerCase())) {
         suggestions.add(user.lastName);
       }
-      
+
       // Add full name if it matches
       if (user.fullName && user.fullName.toLowerCase().includes(partial.toLowerCase())) {
         suggestions.add(user.fullName);
@@ -475,7 +483,7 @@ export class UserSearchService {
     popularFilters?: Record<string, number>;
   }> {
     const totalUsers = await this.userRepository.count();
-    
+
     return {
       totalUsers,
       searchableFields: ['email', 'firstName', 'lastName', 'fullName'],

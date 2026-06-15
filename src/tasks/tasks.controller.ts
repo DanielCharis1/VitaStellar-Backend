@@ -69,16 +69,32 @@ export class TasksController {
 
   @Get()
   @ApiOperation({ summary: 'Get all active health tasks (public)' })
-  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number for pagination', example: 1 })
-  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page for pagination', example: 20 })
-  @ApiQuery({ name: 'categoryId', required: false, type: Number, description: 'Filter tasks by category ID', example: 2 })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number for pagination',
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Items per page for pagination',
+    example: 20,
+  })
+  @ApiQuery({
+    name: 'categoryId',
+    required: false,
+    type: Number,
+    description: 'Filter tasks by category ID',
+    example: 2,
+  })
   @ApiResponse({ status: 200, description: 'Returns paginated list of active tasks' })
   @ApiResponse({ status: 400, description: 'Invalid query parameters' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  findAll(
-    @Query() listTasksDto: ListTasksDto,
-  ): Promise<PaginatedResponseDto<HealthTask>> {
+  findAll(@Query() listTasksDto: ListTasksDto): Promise<PaginatedResponseDto<HealthTask>> {
     return this.tasksService.findAll(listTasksDto);
   }
 
@@ -118,17 +134,8 @@ export class TasksController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 404, description: 'Task not found' })
-  update(
-    @Param('id') id: string,
-    @Body() updateTaskDto: UpdateTaskDto,
-    @Request() req,
-  ) {
-    return this.tasksService.update(
-      id,
-      updateTaskDto,
-      req.user.userId,
-      req.user.role,
-    );
+  update(@Param('id') id: string, @Body() updateTaskDto: UpdateTaskDto, @Request() req) {
+    return this.tasksService.update(id, updateTaskDto, req.user.userId, req.user.role);
   }
 
   @Delete(':id')

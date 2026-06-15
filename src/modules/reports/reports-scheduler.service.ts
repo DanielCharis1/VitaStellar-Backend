@@ -5,7 +5,7 @@ import { AuditService } from '@/audit/audit.service';
 import { ReportsService, ReportType } from './reports.service';
 import { NotificationService } from '@/notifications/services/notification.service';
 
-interface ScheduledReport {
+export interface ScheduledReport {
   name: string;
   reportType: ReportType;
   cronExpression: string;
@@ -22,14 +22,14 @@ export class ReportsSchedulerService {
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly reportsService: ReportsService,
     private readonly auditService: AuditService,
-    private readonly notificationService: NotificationService,
+    private readonly notificationService: NotificationService
   ) {}
 
   async scheduleReport(
     name: string,
     cronExpression: string,
     reportType: ReportType,
-    recipients: string[],
+    recipients: string[]
   ) {
     if (this.schedules.has(name)) {
       throw new Error('A scheduled report with this name already exists');
@@ -40,7 +40,7 @@ export class ReportsSchedulerService {
       async () => await this.executeScheduledReport(name),
       null,
       true,
-      'UTC',
+      'UTC'
     );
 
     this.schedulerRegistry.addCronJob(name, job);
@@ -64,16 +64,26 @@ export class ReportsSchedulerService {
     }
 
     const payload = await this.reportsService.getReportByType(schedule.reportType);
-    await this.distributeReport(schedule.reportType, schedule.recipients, `Scheduled report: ${schedule.name}`, payload);
+    await this.distributeReport(
+      schedule.reportType,
+      schedule.recipients,
+      `Scheduled report: ${schedule.name}`,
+      payload
+    );
 
     await this.auditService.logAction(
       'system',
-      `Executed scheduled report ${name} and distributed to ${schedule.recipients.length} recipient(s)`,
+      `Executed scheduled report ${name} and distributed to ${schedule.recipients.length} recipient(s)`
     );
     this.logger.log(`Executed scheduled report ${name}`);
   }
 
-  async distributeReport(reportType: ReportType, recipients: string[], title: string, payload?: any) {
+  async distributeReport(
+    reportType: ReportType,
+    recipients: string[],
+    title: string,
+    payload?: any
+  ) {
     const reportPayload = payload ?? (await this.reportsService.getReportByType(reportType));
     const summary = JSON.stringify(reportPayload, null, 2);
 
@@ -88,7 +98,7 @@ export class ReportsSchedulerService {
 
     await this.auditService.logAction(
       'system',
-      `Distributed ${reportType} report to ${recipients.length} recipient(s)`,
+      `Distributed ${reportType} report to ${recipients.length} recipient(s)`
     );
     return { message: 'Report distributed successfully', recipients: recipients.length };
   }

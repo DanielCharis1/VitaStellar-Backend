@@ -1,11 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as jwt from 'jsonwebtoken';
-import {
-  TokenPayload,
-  TokenPair,
-  ValidatedToken,
-} from '../../common/interfaces/token.interface';
+import { TokenPayload, TokenPair, ValidatedToken } from '../../common/interfaces/token.interface';
 
 @Injectable()
 export class JwtTokenService {

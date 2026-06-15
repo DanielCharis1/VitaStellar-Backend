@@ -74,12 +74,7 @@ export class UpdateHealthTaskDto {
 
   @ApiPropertyOptional({ description: 'Updated priority level', enum: TaskPriority })
   @IsOptional()
-  @IsIn([
-    TaskPriority.URGENT,
-    TaskPriority.HIGH,
-    TaskPriority.MEDIUM,
-    TaskPriority.LOW,
-  ])
+  @IsIn([TaskPriority.URGENT, TaskPriority.HIGH, TaskPriority.MEDIUM, TaskPriority.LOW])
   priority?: TaskPriority;
 
   @ApiPropertyOptional({

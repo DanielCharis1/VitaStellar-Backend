@@ -7,7 +7,7 @@ import { TaskNote } from '../../../database/entities/task-note.entity';
 export class NotesService {
   constructor(
     @InjectRepository(TaskNote)
-    private readonly noteRepository: Repository<TaskNote>,
+    private readonly noteRepository: Repository<TaskNote>
   ) {}
 
   async addNote(taskId: string, authorId: string, content: string): Promise<TaskNote> {

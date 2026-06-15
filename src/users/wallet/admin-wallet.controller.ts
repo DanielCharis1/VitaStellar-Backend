@@ -35,7 +35,7 @@ export class AdminWalletController {
     @Query('limit') limit: number = 10,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
-    @Query('type') type?: string,
+    @Query('type') type?: string
   ) {
     return this.walletService.getTransactionHistory(
       userId,
@@ -43,7 +43,7 @@ export class AdminWalletController {
       Number(limit),
       startDate,
       endDate,
-      type,
+      type
     );
   }
 }

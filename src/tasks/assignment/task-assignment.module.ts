@@ -10,19 +10,30 @@ import { HealthTask } from '../entities/health-task.entity';
 import { TaskCompletion } from '../entities/task-completion.entity';
 import { User } from '../../entities/user.entity';
 import { RedisModule } from '@nestjs-modules/ioredis';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { redisConfig } from '../../config/redis.config';
 import { QueueModule } from '../../queue/queue.module';
 import { RecurringTaskService } from './recurring-task.service';
 
 @Module({
   imports: [
-    RedisModule,
+    RedisModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => {
+        const redisConf = redisConfig(configService);
+        return {
+          type: 'single',
+          url: `redis://${redisConf.host}:${redisConf.port}`,
+          options: {
+            password: redisConf.password,
+            db: redisConf.db,
+          },
+        };
+      },
+      inject: [ConfigService],
+    }),
     QueueModule,
-    TypeOrmModule.forFeature([
-      DailyTaskAssignment,
-      HealthTask,
-      TaskCompletion,
-      User,
-    ]),
+    TypeOrmModule.forFeature([DailyTaskAssignment, HealthTask, TaskCompletion, User]),
   ],
   controllers: [TaskAssignmentController],
   providers: [

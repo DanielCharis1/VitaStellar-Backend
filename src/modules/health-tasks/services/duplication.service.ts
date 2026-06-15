@@ -7,7 +7,7 @@ import { HealthTask } from '../../../tasks/entities/health-task.entity';
 export class DuplicationService {
   constructor(
     @InjectRepository(HealthTask)
-    private readonly taskRepository: Repository<HealthTask>,
+    private readonly taskRepository: Repository<HealthTask>
   ) {}
 
   async duplicateTask(id: string, overrides: any = {}) {
@@ -18,7 +18,7 @@ export class DuplicationService {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id: _, createdAt, deletedAt, ...rest } = originalTask;
-    
+
     // Handle dueDate and settings which are in targetProfile
     const targetProfile = { ...originalTask.targetProfile };
     if (overrides.dueDate) {
@@ -43,10 +43,10 @@ export class DuplicationService {
 
   async bulkDuplicate(ids: string[], commonOverrides: any = {}) {
     const tasks = await this.taskRepository.find({ where: { id: In(ids) } });
-    const duplicates = tasks.map(task => {
+    const duplicates = tasks.map((task) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { id: _, createdAt, deletedAt, ...rest } = task;
-      
+
       const targetProfile = { ...task.targetProfile };
       if (commonOverrides.dueDate) {
         targetProfile.dueDate = commonOverrides.dueDate;

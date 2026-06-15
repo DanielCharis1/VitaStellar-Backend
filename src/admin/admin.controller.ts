@@ -1,20 +1,5 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  UseGuards,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-  ApiSecurity,
-} from '@nestjs/swagger';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiSecurity } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
@@ -35,7 +20,7 @@ export class AdminController {
   constructor(
     private readonly adminService: AdminService,
     private readonly tasksScheduler: TasksScheduler,
-    private readonly rewardsScheduler: RewardsScheduler,
+    private readonly rewardsScheduler: RewardsScheduler
   ) {}
 
   @Post()
@@ -166,7 +151,8 @@ export class AdminController {
   @Post('tasks/assign-daily')
   @ApiOperation({
     summary: 'Manually trigger daily task assignment',
-    description: 'Triggers the daily task assignment process for all active users. Requires ADMIN role.',
+    description:
+      'Triggers the daily task assignment process for all active users. Requires ADMIN role.',
   })
   @ApiResponse({
     status: 200,
@@ -200,8 +186,7 @@ export class AdminController {
   @Post('rewards/reset-daily')
   @ApiOperation({
     summary: 'Manually trigger daily rewards reset',
-    description:
-      'Resets the daily XLM rewards counter for all users. Requires ADMIN role.',
+    description: 'Resets the daily XLM rewards counter for all users. Requires ADMIN role.',
   })
   @ApiResponse({
     status: 200,

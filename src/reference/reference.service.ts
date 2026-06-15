@@ -37,7 +37,7 @@ export class ReferenceService {
       await this.redisClient.setEx(
         this.COUNTRIES_CACHE_KEY,
         this.CACHE_TTL,
-        JSON.stringify(AFRICAN_COUNTRIES),
+        JSON.stringify(AFRICAN_COUNTRIES)
       );
 
       return AFRICAN_COUNTRIES;
@@ -64,7 +64,7 @@ export class ReferenceService {
       await this.redisClient.setEx(
         this.LANGUAGES_CACHE_KEY,
         this.CACHE_TTL,
-        JSON.stringify(SUPPORTED_LANGUAGES),
+        JSON.stringify(SUPPORTED_LANGUAGES)
       );
 
       return SUPPORTED_LANGUAGES;
@@ -79,10 +79,7 @@ export class ReferenceService {
    */
   async invalidateCache(): Promise<void> {
     try {
-      await this.redisClient.del([
-        this.COUNTRIES_CACHE_KEY,
-        this.LANGUAGES_CACHE_KEY,
-      ]);
+      await this.redisClient.del([this.COUNTRIES_CACHE_KEY, this.LANGUAGES_CACHE_KEY]);
       this.logger.debug('Reference data cache invalidated');
     } catch (error) {
       this.logger.warn('Failed to invalidate cache', error);

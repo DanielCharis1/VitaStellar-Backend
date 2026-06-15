@@ -138,9 +138,7 @@ const categories = [
   },
 ];
 
-export async function seedTaskCategories(
-  dataSource: DataSource,
-): Promise<void> {
+export async function seedTaskCategories(dataSource: DataSource): Promise<void> {
   const logger = new Logger('SeedTaskCategories');
   const categoryRepository = dataSource.getRepository(TaskCategory);
 

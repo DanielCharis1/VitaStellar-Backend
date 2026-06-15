@@ -1,12 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
 import { TaskCompletionService } from './task-completion.service';
 import { CompleteTaskDto } from './dto/complete-task.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
@@ -16,7 +8,7 @@ import { StorageService } from '../../storage/storage.service';
 export class TaskCompletionController {
   constructor(
     private readonly service: TaskCompletionService,
-    private readonly storageService: StorageService,
+    private readonly storageService: StorageService
   ) {}
 
   @Post()
@@ -34,12 +26,8 @@ export class TaskCompletionController {
   getProofUploadUrl(
     @Req() req: any,
     @Param('id') taskId: string,
-    @Body('contentType') contentType: 'image/jpeg' | 'image/png' = 'image/jpeg',
+    @Body('contentType') contentType: 'image/jpeg' | 'image/png' = 'image/jpeg'
   ) {
-    return this.storageService.generatePresignedUploadUrl(
-      req.user.id,
-      taskId,
-      contentType,
-    );
+    return this.storageService.generatePresignedUploadUrl(req.user.id, taskId, contentType);
   }
 }

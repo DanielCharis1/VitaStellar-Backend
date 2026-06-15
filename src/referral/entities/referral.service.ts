@@ -11,7 +11,7 @@ export class ReferralService {
     private userRepo: Repository<User>,
 
     @InjectRepository(ReferralRecord)
-    private referralRepo: Repository<ReferralRecord>,
+    private referralRepo: Repository<ReferralRecord>
   ) {}
 
   async getMyReferralCode(userId: string) {

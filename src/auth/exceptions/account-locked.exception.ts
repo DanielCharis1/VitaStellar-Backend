@@ -11,7 +11,7 @@ export class AccountLockedException extends HttpException {
         message: 'Account is temporarily locked due to too many failed login attempts',
         lockedUntil: lockedUntil.toISOString(),
       },
-      HTTP_LOCKED,
+      HTTP_LOCKED
     );
   }
 }

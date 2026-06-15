@@ -1,13 +1,6 @@
-import {
-  MigrationInterface,
-  QueryRunner,
-  Table,
-  TableForeignKey,
-} from 'typeorm';
+import { MigrationInterface, QueryRunner, Table, TableForeignKey } from 'typeorm';
 
-export class CreateHealthProfileTable1680000000000
-  implements MigrationInterface
-{
+export class CreateHealthProfileTable1680000000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
@@ -32,7 +25,7 @@ export class CreateHealthProfileTable1680000000000
           { name: 'dailyTaskTarget', type: 'int', default: 3 },
         ],
       }),
-      true,
+      true
     );
 
     await queryRunner.createForeignKey(
@@ -42,7 +35,7 @@ export class CreateHealthProfileTable1680000000000
         referencedColumnNames: ['id'],
         referencedTableName: 'users',
         onDelete: 'CASCADE',
-      }),
+      })
     );
   }
 

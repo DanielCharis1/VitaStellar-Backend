@@ -30,7 +30,7 @@ export class TaskAssignmentService {
     @InjectRedis()
     private readonly redis: Redis,
 
-    private readonly dataSource: DataSource,
+    private readonly dataSource: DataSource
   ) {}
 
   // ─── Public: Get or Create Today's Assignment ─────────────────────────
@@ -54,28 +54,18 @@ export class TaskAssignmentService {
 
     // 3. Create lazily if not found
     if (!assignment) {
-      this.logger.debug(
-        `Creating new assignment for user ${user.id} on ${today}`,
-      );
+      this.logger.debug(`Creating new assignment for user ${user.id} on ${today}`);
       assignment = await this.createAssignment(user, today);
     }
 
     // 4. Cache and return
-    await this.redis.set(
-      cacheKey,
-      JSON.stringify(assignment),
-      'EX',
-      CACHE_TTL_SECONDS,
-    );
+    await this.redis.set(cacheKey, JSON.stringify(assignment), 'EX', CACHE_TTL_SECONDS);
     return assignment;
   }
 
   // ─── Private: Create Assignment ───────────────────────────────────────
 
-  private async createAssignment(
-    user: User,
-    today: string,
-  ): Promise<DailyTaskAssignment> {
+  private async createAssignment(user: User, today: string): Promise<DailyTaskAssignment> {
     const tasks = await this.selectTasksForUser(user, today);
 
     const assignment = this.assignmentRepo.create({
@@ -89,10 +79,7 @@ export class TaskAssignmentService {
 
   // ─── Private: Select Personalized Tasks ──────────────────────────────
 
-  private async selectTasksForUser(
-    user: User,
-    today: string,
-  ): Promise<HealthTask[]> {
+  private async selectTasksForUser(user: User, today: string): Promise<HealthTask[]> {
     const sevenDaysAgo = this.getDateDaysAgo(COMPLETION_LOOKBACK_DAYS);
 
     // Subquery: task IDs completed by this user in the last 7 days

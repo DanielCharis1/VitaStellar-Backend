@@ -15,6 +15,7 @@ import { TaskSearchService } from './services/task-search.service';
 import { AttachmentsService } from './services/attachments.service';
 import { DuplicationService } from './services/duplication.service';
 import { ReminderService } from './services/reminder.service';
+import { ActivityLogService } from './services/activity-log.service';
 import { NotesService } from './services/notes.service';
 import { SharingService } from './services/sharing.service';
 import { TaskAttachment } from '../../database/entities/task-attachment.entity';
@@ -24,6 +25,7 @@ import { TaskNote } from '../../database/entities/task-note.entity';
 import { TaskShare } from '../../database/entities/task-share.entity';
 import { TaskCategory } from '../../database/entities/task-category.entity';
 import { TaskTag } from '../../database/entities/task-tag.entity';
+import { TaskActivity } from '../../database/entities/task-activity.entity';
 import { NotificationsModule } from '../../notifications/notifications.module';
 import { User } from '../../entities/user.entity';
 import { AnalyticsModule } from '../../shared/analytics/analytics.module';
@@ -42,6 +44,7 @@ import { AnalyticsModule } from '../../shared/analytics/analytics.module';
       TaskCategory,
       User,
       TaskTag,
+      TaskActivity,
     ]),
     CacheModule.register(),
     NotificationsModule,
@@ -57,6 +60,7 @@ import { AnalyticsModule } from '../../shared/analytics/analytics.module';
     TaskSearchService,
     AttachmentsService,
     DuplicationService,
+    ActivityLogService,
     ReminderService,
     NotesService,
     SharingService,

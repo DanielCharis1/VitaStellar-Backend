@@ -1,5 +1,9 @@
 import { IsEmail, IsString } from 'class-validator';
-import { IsStrongPassword, HasMinPasswordStrength, IsStrongPasswordCategory } from '../decorators/strong-password.decorator';
+import {
+  IsStrongPassword,
+  HasMinPasswordStrength,
+  IsStrongPasswordCategory,
+} from '../decorators/strong-password.decorator';
 
 /**
  * Example DTO showing how to use the password validation decorators
@@ -13,7 +17,8 @@ export class RegisterUserDto {
 
   // Basic strong password validation with default requirements
   @IsStrongPassword({
-    message: 'Password must be at least 8 characters long and contain uppercase, lowercase, number, and special character'
+    message:
+      'Password must be at least 8 characters long and contain uppercase, lowercase, number, and special character',
   })
   password: string;
 }
@@ -35,10 +40,10 @@ export class RegisterAdminDto {
     requireLowercase: true,
     requireNumbers: true,
     requireSpecialChars: true,
-    message: 'Admin password must be at least 12 characters long with all character types'
+    message: 'Admin password must be at least 12 characters long with all character types',
   })
   @HasMinPasswordStrength(80, {
-    message: 'Admin password strength score must be at least 80'
+    message: 'Admin password strength score must be at least 80',
   })
   password: string;
 }
@@ -55,7 +60,7 @@ export class HighSecurityUserDto {
 
   // Require strong or very strong passwords
   @IsStrongPasswordCategory(['strong', 'very_strong'], {
-    message: 'Password must be strong or very strong'
+    message: 'Password must be strong or very strong',
   })
   password: string;
 }

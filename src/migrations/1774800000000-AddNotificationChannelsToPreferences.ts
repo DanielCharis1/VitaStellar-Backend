@@ -1,8 +1,6 @@
 import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
 
-export class AddNotificationChannelsToPreferences1774800000000
-  implements MigrationInterface
-{
+export class AddNotificationChannelsToPreferences1774800000000 implements MigrationInterface {
   name = 'AddNotificationChannelsToPreferences1774800000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -13,7 +11,7 @@ export class AddNotificationChannelsToPreferences1774800000000
         name: 'emailNotifications',
         type: 'boolean',
         default: true,
-      }),
+      })
     );
 
     // Add smsNotifications column
@@ -23,7 +21,7 @@ export class AddNotificationChannelsToPreferences1774800000000
         name: 'smsNotifications',
         type: 'boolean',
         default: true,
-      }),
+      })
     );
 
     // Add pushNotifications column
@@ -33,7 +31,7 @@ export class AddNotificationChannelsToPreferences1774800000000
         name: 'pushNotifications',
         type: 'boolean',
         default: true,
-      }),
+      })
     );
   }
 

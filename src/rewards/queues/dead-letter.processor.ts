@@ -5,7 +5,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
-import { REWARD_DEAD_LETTER_QUEUE, REWARD_QUEUE, REWARD_DISTRIBUTION_JOB } from '../../queue/queue.constants';
+import {
+  REWARD_DEAD_LETTER_QUEUE,
+  REWARD_QUEUE,
+  REWARD_DISTRIBUTION_JOB,
+} from '../../queue/queue.constants';
 import { FailedRewardJob } from '../entities/failed-reward-job.entity';
 
 export interface DeadLetterJobData {
@@ -31,7 +35,7 @@ export class DeadLetterProcessor {
   constructor(
     @InjectRepository(FailedRewardJob)
     private readonly failedRewardJobRepository: Repository<FailedRewardJob>,
-    @InjectQueue(REWARD_QUEUE) private readonly rewardQueue: Queue,
+    @InjectQueue(REWARD_QUEUE) private readonly rewardQueue: Queue
   ) {}
 
   /**
@@ -41,10 +45,19 @@ export class DeadLetterProcessor {
   @Process({ name: 'process', concurrency: 3 })
   async handleDeadLetter(job: Job<DeadLetterJobData>) {
     this.logger.warn(
-      `Processing dead letter job ${job.id} for completion ${job.data.taskCompletionId}`,
+      `Processing dead letter job ${job.id} for completion ${job.data.taskCompletionId}`
     );
 
-    const { userId, xlmAmount, taskCompletionId, errorMessage, jobId, attemptsMade, jobType, jobData } = job.data;
+    const {
+      userId,
+      xlmAmount,
+      taskCompletionId,
+      errorMessage,
+      jobId,
+      attemptsMade,
+      jobType,
+      jobData,
+    } = job.data;
 
     // Save failed job to DB for admin review and replay
     const failedJob = this.failedRewardJobRepository.create({
@@ -61,7 +74,7 @@ export class DeadLetterProcessor {
     await this.failedRewardJobRepository.save(failedJob);
 
     this.logger.error(
-      `Dead letter recorded for user ${userId}, completion ${taskCompletionId}: ${errorMessage}`,
+      `Dead letter recorded for user ${userId}, completion ${taskCompletionId}: ${errorMessage}`
     );
 
     return { success: true, failedJobId: failedJob.id };
@@ -96,15 +109,13 @@ export class DeadLetterProcessor {
         },
         removeOnComplete: true,
         removeOnFail: false,
-      },
+      }
     );
 
     // Delete from failed jobs after successful replay initiation
     await this.failedRewardJobRepository.delete(failedJobId);
 
-    this.logger.log(
-      `Replayed failed job ${failedJobId} as ${replayJob.id}`,
-    );
+    this.logger.log(`Replayed failed job ${failedJobId} as ${replayJob.id}`);
 
     return { jobId: replayJob.id?.toString() || '' };
   }

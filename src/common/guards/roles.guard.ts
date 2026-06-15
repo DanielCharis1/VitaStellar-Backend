@@ -12,14 +12,14 @@ export class RolesGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
-    
+
     // If no roles are required, allow access
     if (!requiredRoles || requiredRoles.length === 0) {
       return true;
     }
 
     const { user } = context.switchToHttp().getRequest();
-    
+
     // If user is not present (should be handled by AuthGuard), deny access
     if (!user) {
       return false;
@@ -32,11 +32,11 @@ export class RolesGuard implements CanActivate {
 
     // Check if user has any of the required roles
     const hasRole = requiredRoles.some((role) => user.role === role);
-    
+
     if (!hasRole) {
       throw new ForbiddenException('Insufficient permissions');
     }
-    
+
     return true;
   }
 }

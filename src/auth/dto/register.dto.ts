@@ -1,11 +1,4 @@
-import {
-  IsEmail,
-  IsNotEmpty,
-  IsString,
-  IsOptional,
-  Length,
-  Matches,
-} from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, IsOptional, Length, Matches } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class RegisterDto {
@@ -18,7 +11,8 @@ export class RegisterDto {
   email: string;
 
   @ApiProperty({
-    description: '8-32 characters with at least one uppercase letter, one lowercase letter, one digit, and one special character.',
+    description:
+      '8-32 characters with at least one uppercase letter, one lowercase letter, one digit, and one special character.',
     example: 'StrongP@ssw0rd!',
     minLength: 8,
     maxLength: 32,
@@ -46,8 +40,7 @@ export class RegisterDto {
   @IsString()
   @Length(2, 2)
   @Matches(/^[A-Z]{2}$/, {
-    message:
-      'Country must be a valid ISO 3166-1 alpha-2 code (2 uppercase letters)',
+    message: 'Country must be a valid ISO 3166-1 alpha-2 code (2 uppercase letters)',
   })
   country: string;
 

@@ -27,10 +27,14 @@ export class TaskFilterService {
 
   constructor(
     @InjectRepository(HealthTask)
-    private readonly taskRepo: Repository<HealthTask>,
+    private readonly taskRepo: Repository<HealthTask>
   ) {}
 
-  async filter(options: TaskFilterOptions, page: number = 1, limit: number = 10): Promise<{ data: HealthTask[], total: number }> {
+  async filter(
+    options: TaskFilterOptions,
+    page: number = 1,
+    limit: number = 10
+  ): Promise<{ data: HealthTask[]; total: number }> {
     const where: FindOptionsWhere<HealthTask> = {};
 
     if (options.status) where.status = options.status;
@@ -88,7 +92,12 @@ export class TaskFilterService {
     return this.presets.delete(`${ownerId}:${name}`);
   }
 
-  async filterWithPreset(presetName: string, ownerId: string, page: number = 1, limit: number = 10): Promise<{ data: HealthTask[], total: number }> {
+  async filterWithPreset(
+    presetName: string,
+    ownerId: string,
+    page: number = 1,
+    limit: number = 10
+  ): Promise<{ data: HealthTask[]; total: number }> {
     const preset = this.getPreset(presetName, ownerId);
     if (!preset) return { data: [], total: 0 };
     return this.filter(preset.filters, page, limit);

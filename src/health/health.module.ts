@@ -1,35 +1,19 @@
-import {
-  Module,
-} from "@nestjs/common";
+import { Module } from '@nestjs/common';
 
-import {
-  TerminusModule,
-} from "@nestjs/terminus";
+import { TerminusModule } from '@nestjs/terminus';
 
-import {
-  HealthController,
-} from "./health.controller";
+import { HealthController } from './health.controller';
 
-import {
-  RedisHealthIndicator,
-} from "./indicators/redis.health";
+import { RedisHealthIndicator } from './redis-health.indicator';
 
-import {
-  QueueHealthIndicator,
-} from "./indicators/queue.health";
+import { QueueHealthIndicator } from './indicators/queue.health';
 
 @Module({
-  imports: [
-    TerminusModule,
-  ],
+  imports: [TerminusModule],
 
-  controllers: [
-    HealthController,
-  ],
+  controllers: [HealthController],
 
-  providers: [
-    RedisHealthIndicator,
-    QueueHealthIndicator,
-  ],
+  providers: [RedisHealthIndicator, QueueHealthIndicator],
+  exports: [TerminusModule, RedisHealthIndicator, QueueHealthIndicator],
 })
 export class HealthModule {}

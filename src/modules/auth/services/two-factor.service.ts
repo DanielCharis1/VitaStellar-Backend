@@ -16,7 +16,7 @@ export class TwoFactorService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     @InjectRepository(TwoFactor)
-    private readonly twoFactorRepository: Repository<TwoFactor>,
+    private readonly twoFactorRepository: Repository<TwoFactor>
   ) {
     authenticator.options = { window: 1 };
   }
@@ -30,7 +30,7 @@ export class TwoFactorService {
     const secret = authenticator.generateSecret();
     const backupCodes = await this.generateBackupCodes();
     const backupCodeHashes = await Promise.all(
-      backupCodes.map(async (code) => ({ codeHash: await bcrypt.hash(code, 12), used: false })),
+      backupCodes.map(async (code) => ({ codeHash: await bcrypt.hash(code, 12), used: false }))
     );
 
     const existing = await this.twoFactorRepository.findOne({ where: { user: { id: userId } } });

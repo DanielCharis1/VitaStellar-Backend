@@ -10,10 +10,7 @@ export class LoggingMiddleware implements NestMiddleware {
   constructor() {
     this.logger = winston.createLogger({
       level: 'info',
-      format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.json(),
-      ),
+      format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
       transports: [
         new winston.transports.Console({
           format: winston.format.combine(
@@ -21,7 +18,7 @@ export class LoggingMiddleware implements NestMiddleware {
             winston.format.printf(({ timestamp, level, message, ...meta }) => {
               const requestId = meta.requestId ? ` [${meta.requestId}]` : '';
               return `${timestamp} ${level}:${requestId} ${message} ${Object.keys(meta).length ? JSON.stringify(meta) : ''}`;
-            }),
+            })
           ),
         }),
       ],
@@ -30,7 +27,7 @@ export class LoggingMiddleware implements NestMiddleware {
 
   use(req: Request, res: Response, next: NextFunction) {
     const { method, originalUrl, body } = req;
-    
+
     // Skip logging for health endpoint
     if (originalUrl === '/health' || originalUrl.includes('/health')) {
       return next();
@@ -38,7 +35,7 @@ export class LoggingMiddleware implements NestMiddleware {
 
     const startTime = Date.now();
     const requestId = (req.headers['x-request-id'] as string) || uuidv4();
-    
+
     // Set request ID in headers for tracing
     req.headers['x-request-id'] = requestId;
     res.setHeader('x-request-id', requestId);

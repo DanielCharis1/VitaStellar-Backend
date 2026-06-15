@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  ForbiddenException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { HealthTask } from '../../../tasks/entities/health-task.entity';
@@ -32,13 +28,13 @@ export class TaskDetailService {
 
   constructor(
     @InjectRepository(HealthTask)
-    private readonly taskRepo: Repository<HealthTask>,
+    private readonly taskRepo: Repository<HealthTask>
   ) {}
 
   async getDetail(
     taskId: string,
     requesterId: string,
-    requesterRole?: string,
+    requesterRole?: string
   ): Promise<TaskDetailResponse> {
     const task = await this.taskRepo.findOne({ where: { id: taskId } });
 

@@ -1,6 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, LessThanOrEqual, MoreThanOrEqual, Repository, Like, FindOptionsWhere } from 'typeorm';
+import {
+  Between,
+  LessThanOrEqual,
+  MoreThanOrEqual,
+  Repository,
+  Like,
+  FindOptionsWhere,
+} from 'typeorm';
 import { AuditLog, AuditAction, AuditResource } from './entities/audit-log.entity';
 import { CreateAuditDto } from './dto/create-audit.dto';
 import { UpdateAuditDto } from './dto/update-audit.dto';
@@ -57,9 +64,7 @@ export class AuditService {
   private readonly logger = new Logger(AuditService.name);
   private previousHash: string | null = null;
 
-  constructor(
-    @InjectRepository(AuditLog) private auditRepo: Repository<AuditLog>,
-  ) {}
+  constructor(@InjectRepository(AuditLog) private auditRepo: Repository<AuditLog>) {}
 
   /**
    * Create a comprehensive audit log entry with immutability features
@@ -140,7 +145,7 @@ export class AuditService {
 
     for (let i = 0; i < logs.length; i++) {
       const log = logs[i];
-      
+
       // Verify hash
       const expectedHash = this.generateHash(log);
       if (log.hash !== expectedHash) {
@@ -184,11 +189,11 @@ export class AuditService {
 
     // Build where clause for filtering
     const where: FindOptionsWhere<AuditLog> = {};
-    
+
     if (action) {
       where.action = action;
     }
-    
+
     if (resourceType) {
       where.resourceType = resourceType;
     }
@@ -196,7 +201,7 @@ export class AuditService {
     if (resourceId) {
       where.resourceId = resourceId;
     }
-    
+
     if (userId) {
       where.userId = userId;
     }
@@ -259,10 +264,10 @@ export class AuditService {
       eventsByCategory: {},
       eventsByAction: {},
       eventsByUser: {},
-      sensitiveEvents: complianceLogs.filter(log => log.isSensitive).length,
+      sensitiveEvents: complianceLogs.filter((log) => log.isSensitive).length,
     };
 
-    complianceLogs.forEach(log => {
+    complianceLogs.forEach((log) => {
       // Count by category
       const category = log.complianceCategory || 'UNCATEGORIZED';
       report.eventsByCategory[category] = (report.eventsByCategory[category] || 0) + 1;
@@ -300,11 +305,13 @@ export class AuditService {
   /**
    * Clean up expired audit logs based on retention policy
    * Deletes logs older than the specified number of days
-   * 
+   *
    * @param retentionDays Number of days to retain logs (e.g., 30 for 30-day retention)
    * @returns Object containing deleted count and potentially failed deletes
    */
-  async cleanupExpiredLogs(retentionDays: number): Promise<{ deletedCount: number; deletedIds: string[] }> {
+  async cleanupExpiredLogs(
+    retentionDays: number
+  ): Promise<{ deletedCount: number; deletedIds: string[] }> {
     if (retentionDays <= 0) {
       throw new Error('Retention days must be greater than 0');
     }
@@ -314,7 +321,7 @@ export class AuditService {
     expirationDate.setDate(expirationDate.getDate() - retentionDays);
 
     this.logger.log(
-      `Starting cleanup of audit logs older than ${retentionDays} days (before ${expirationDate.toISOString()})`,
+      `Starting cleanup of audit logs older than ${retentionDays} days (before ${expirationDate.toISOString()})`
     );
 
     try {
@@ -332,7 +339,7 @@ export class AuditService {
         return { deletedCount: 0, deletedIds: [] };
       }
 
-      const deletedIds = logsToDelete.map(log => log.id);
+      const deletedIds = logsToDelete.map((log) => log.id);
 
       // Delete the logs
       await this.auditRepo.delete({
@@ -340,9 +347,7 @@ export class AuditService {
         isComplianceEvent: false,
       } as any);
 
-      this.logger.log(
-        `Successfully deleted ${logsToDelete.length} expired audit logs`,
-      );
+      this.logger.log(`Successfully deleted ${logsToDelete.length} expired audit logs`);
 
       return {
         deletedCount: logsToDelete.length,
@@ -351,10 +356,7 @@ export class AuditService {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       const errorStack = error instanceof Error ? error.stack : undefined;
-      this.logger.error(
-        `Error cleaning up expired audit logs: ${errorMessage}`,
-        errorStack,
-      );
+      this.logger.error(`Error cleaning up expired audit logs: ${errorMessage}`, errorStack);
       throw error;
     }
   }
@@ -387,7 +389,7 @@ export class AuditService {
       order: { blockIndex: 'DESC' },
       select: ['blockIndex'],
     });
-    
+
     return (lastLog?.blockIndex || 0) + 1;
   }
 }

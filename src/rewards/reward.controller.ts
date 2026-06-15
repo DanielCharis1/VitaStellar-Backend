@@ -8,12 +8,7 @@ import {
   HttpStatus,
   HttpCode,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RewardService } from './reward.service';
 import { PriceFeedService } from '../stellar/price-feed.service';
@@ -31,7 +26,7 @@ import {
 export class RewardController {
   constructor(
     private readonly rewardService: RewardService,
-    private readonly priceFeedService: PriceFeedService,
+    private readonly priceFeedService: PriceFeedService
   ) {}
 
   @Get('xlm-price')
@@ -70,8 +65,7 @@ export class RewardController {
     const userId = req.user.sub ?? req.user.id;
     await this.rewardService.emitMilestoneIfReached(userId);
     return {
-      message:
-        'Milestone check completed. Check GET /coupons/me for new coupons.',
+      message: 'Milestone check completed. Check GET /coupons/me for new coupons.',
     };
   }
 
@@ -93,7 +87,7 @@ export class RewardController {
   })
   async getRewardHistory(
     @Request() req: any,
-    @Query() queryDto: RewardHistoryQueryDto,
+    @Query() queryDto: RewardHistoryQueryDto
   ): Promise<RewardHistoryResponseDto> {
     const userId = req.user.id;
     return this.rewardService.getRewardHistory(userId, queryDto);

@@ -8,7 +8,7 @@ import { HealthTaskSeeder } from './health-task.seeder';
 /**
  * Main seeder runner script.
  * Executes all seeders in the correct order.
- * 
+ *
  * Usage:
  *   npx ts-node src/database/seeders/run-seeders.ts
  *   npm run seed

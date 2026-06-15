@@ -20,7 +20,7 @@ export class MonitoringInterceptor implements NestInterceptor {
         const statusCode = response.statusCode || 500;
 
         void this.monitoringService.monitorPerformance(route, method, duration, statusCode);
-      }),
+      })
     );
   }
 }

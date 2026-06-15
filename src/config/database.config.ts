@@ -16,7 +16,7 @@ export class SlowQueryLogger implements TypeOrmLogger {
 
   constructor(
     private readonly thresholdMs: number,
-    private readonly production: boolean,
+    private readonly production: boolean
   ) {}
 
   logQuerySlow(time: number, query: string, parameters?: unknown[], _queryRunner?: QueryRunner) {
@@ -24,7 +24,7 @@ export class SlowQueryLogger implements TypeOrmLogger {
       return;
     }
     this.logger.warn(
-      `Slow query (${time}ms): ${query}${parameters?.length ? ` -- params: ${JSON.stringify(parameters)}` : ''}`,
+      `Slow query (${time}ms): ${query}${parameters?.length ? ` -- params: ${JSON.stringify(parameters)}` : ''}`
     );
   }
 
@@ -36,7 +36,7 @@ export class SlowQueryLogger implements TypeOrmLogger {
 
   logQueryError(error: string | Error, query: string, parameters?: unknown[]) {
     this.logger.error(
-      `Query error: ${error instanceof Error ? error.message : error} | ${query}${parameters?.length ? ` -- params: ${JSON.stringify(parameters)}` : ''}`,
+      `Query error: ${error instanceof Error ? error.message : error} | ${query}${parameters?.length ? ` -- params: ${JSON.stringify(parameters)}` : ''}`
     );
   }
 
@@ -59,7 +59,7 @@ export class SlowQueryLogger implements TypeOrmLogger {
 }
 
 export function buildDatabaseTypeOrmOptions(
-  env: NodeJS.ProcessEnv = process.env,
+  env: NodeJS.ProcessEnv = process.env
 ): Pick<TypeOrmModuleOptions, 'logging' | 'maxQueryExecutionTime' | 'logger'> {
   const isProduction = env.NODE_ENV === 'production';
   const thresholdMs = getSlowQueryThresholdMs(env);
@@ -97,7 +97,7 @@ export const databaseConfig = registerAs(
       duration: parseInt(process.env.CACHE_DURATION || '300000', 10),
     },
     ...buildDatabaseTypeOrmOptions(process.env),
-  }),
+  })
 );
 
 export const cacheConfig = registerAs('cache', () => ({

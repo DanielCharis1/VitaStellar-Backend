@@ -10,8 +10,18 @@ export enum SortOrder {
 export class SortFieldDto {
   @ApiPropertyOptional({
     description: 'Field to sort by',
-    enum: ['id', 'email', 'firstName', 'lastName', 'role', 'isActive', 'createdAt', 'updatedAt', 'lastActiveAt'],
-    default: 'createdAt'
+    enum: [
+      'id',
+      'email',
+      'firstName',
+      'lastName',
+      'role',
+      'isActive',
+      'createdAt',
+      'updatedAt',
+      'lastActiveAt',
+    ],
+    default: 'createdAt',
   })
   @IsString()
   @IsOptional()
@@ -20,7 +30,7 @@ export class SortFieldDto {
   @ApiPropertyOptional({
     description: 'Sort order',
     enum: SortOrder,
-    default: SortOrder.DESC
+    default: SortOrder.DESC,
   })
   @IsEnum(SortOrder)
   @IsOptional()
@@ -32,7 +42,7 @@ export class PaginationDto {
     description: 'Page number',
     example: 1,
     minimum: 1,
-    default: 1
+    default: 1,
   })
   @IsOptional()
   @Type(() => Number)
@@ -45,7 +55,7 @@ export class PaginationDto {
     example: 10,
     minimum: 1,
     maximum: 100,
-    default: 10
+    default: 10,
   })
   @IsOptional()
   @Type(() => Number)
@@ -57,7 +67,7 @@ export class PaginationDto {
   @ApiPropertyOptional({
     description: 'Sort fields',
     type: [SortFieldDto],
-    isArray: true
+    isArray: true,
   })
   @IsOptional()
   @IsArray()
@@ -66,7 +76,7 @@ export class PaginationDto {
 
   @ApiPropertyOptional({
     description: 'Search query to filter by email, first name, or last name',
-    example: 'john'
+    example: 'john',
   })
   @IsOptional()
   @IsString()
@@ -75,55 +85,55 @@ export class PaginationDto {
 
 export class PaginationMetaDto {
   @ApiProperty({
-    description: 'Current page number'
+    description: 'Current page number',
   })
   page: number;
 
   @ApiProperty({
-    description: 'Number of items per page'
+    description: 'Number of items per page',
   })
   limit: number;
 
   @ApiProperty({
-    description: 'Total number of items'
+    description: 'Total number of items',
   })
   total: number;
 
   @ApiProperty({
-    description: 'Total number of pages'
+    description: 'Total number of pages',
   })
   totalPages: number;
 
   @ApiProperty({
-    description: 'Has next page'
+    description: 'Has next page',
   })
   hasNext: boolean;
 
   @ApiProperty({
-    description: 'Has previous page'
+    description: 'Has previous page',
   })
   hasPrev: boolean;
 
   @ApiProperty({
-    description: 'Next page number'
+    description: 'Next page number',
   })
   nextPage?: number;
 
   @ApiProperty({
-    description: 'Previous page number'
+    description: 'Previous page number',
   })
   prevPage?: number;
 }
 
 export class PaginatedResponseDto<T> {
   @ApiProperty({
-    description: 'Array of items'
+    description: 'Array of items',
   })
   data: T[];
 
   @ApiProperty({
     description: 'Pagination metadata',
-    type: PaginationMetaDto
+    type: PaginationMetaDto,
   })
   meta: PaginationMetaDto;
 }

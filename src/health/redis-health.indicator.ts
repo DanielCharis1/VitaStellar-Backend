@@ -35,7 +35,7 @@ export class RedisHealthIndicator {
 
       throw new HealthCheckError(
         error instanceof Error ? error.message : 'Redis health check failed',
-        result,
+        result
       );
     }
   }

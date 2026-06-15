@@ -1,11 +1,9 @@
-import {
-  IsEnum,
-} from "class-validator";
+import { IsEnum } from 'class-validator';
 
 export enum UserRole {
-  USER = "USER",
-  HEALER = "HEALER",
-  ADMIN = "ADMIN",
+  USER = 'USER',
+  HEALER = 'HEALER',
+  ADMIN = 'ADMIN',
 }
 
 export class AssignRoleDto {

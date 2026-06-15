@@ -17,7 +17,8 @@ export const healthTasksData: HealthTaskData[] = [
   // Nutrition tasks
   {
     title: 'Eat 5 servings of fruits and vegetables',
-    description: 'Consume at least 5 servings of fruits and vegetables today for optimal nutrition.',
+    description:
+      'Consume at least 5 servings of fruits and vegetables today for optimal nutrition.',
     category: TaskCategory.NUTRITION,
     xlmReward: 0.5,
     status: 'active',
@@ -31,7 +32,8 @@ export const healthTasksData: HealthTaskData[] = [
   },
   {
     title: 'Eat a balanced breakfast',
-    description: 'Start your day with a nutritious breakfast containing protein, carbs, and healthy fats.',
+    description:
+      'Start your day with a nutritious breakfast containing protein, carbs, and healthy fats.',
     category: TaskCategory.NUTRITION,
     xlmReward: 0.4,
     status: 'active',
@@ -61,7 +63,8 @@ export const healthTasksData: HealthTaskData[] = [
   // Mental health tasks
   {
     title: 'Meditate for 15 minutes',
-    description: 'Practice mindfulness meditation for 15 minutes to reduce stress and improve focus.',
+    description:
+      'Practice mindfulness meditation for 15 minutes to reduce stress and improve focus.',
     category: TaskCategory.MENTAL,
     xlmReward: 0.8,
     status: 'active',
@@ -90,7 +93,8 @@ export const healthTasksData: HealthTaskData[] = [
   },
   {
     title: 'Create a bedtime routine',
-    description: 'Follow a consistent bedtime routine: no screens 30 min before bed, read, and relax.',
+    description:
+      'Follow a consistent bedtime routine: no screens 30 min before bed, read, and relax.',
     category: TaskCategory.SLEEP,
     xlmReward: 0.6,
     status: 'active',

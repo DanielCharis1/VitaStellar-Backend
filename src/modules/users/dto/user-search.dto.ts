@@ -1,5 +1,14 @@
 import { Type, Transform } from 'class-transformer';
-import { IsOptional, IsString, IsEnum, IsInt, Min, Max, IsBoolean, IsDateString } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsEnum,
+  IsInt,
+  Min,
+  Max,
+  IsBoolean,
+  IsDateString,
+} from 'class-validator';
 import { ApiPropertyOptional, ApiProperty } from '@nestjs/swagger';
 import { SortOrder } from '../../../common/dtos/pagination.dto';
 import { Role } from '../../../auth/enums/role.enum';
@@ -128,7 +137,19 @@ export class UserSearchDto {
 
   @ApiPropertyOptional({
     description: 'Sort field',
-    enum: ['id', 'email', 'firstName', 'lastName', 'fullName', 'role', 'status', 'isVerified', 'createdAt', 'updatedAt', 'lastActiveAt'],
+    enum: [
+      'id',
+      'email',
+      'firstName',
+      'lastName',
+      'fullName',
+      'role',
+      'status',
+      'isVerified',
+      'createdAt',
+      'updatedAt',
+      'lastActiveAt',
+    ],
     example: 'createdAt',
   })
   @IsOptional()

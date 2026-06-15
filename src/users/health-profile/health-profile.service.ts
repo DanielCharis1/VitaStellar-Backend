@@ -19,7 +19,7 @@ type OptionalProfileField = (typeof OPTIONAL_PROFILE_FIELDS)[number];
 export class HealthProfileService {
   constructor(
     @InjectRepository(HealthProfile)
-    private readonly healthProfileRepo: Repository<HealthProfile>,
+    private readonly healthProfileRepo: Repository<HealthProfile>
   ) {}
 
   async createForUser(user: User): Promise<HealthProfile> {
@@ -40,19 +40,14 @@ export class HealthProfileService {
     return profile;
   }
 
-  async updateProfile(
-    userId: string,
-    dto: UpdateHealthProfileDto,
-  ): Promise<HealthProfile> {
+  async updateProfile(userId: string, dto: UpdateHealthProfileDto): Promise<HealthProfile> {
     const profile = await this.getProfileByUserId(userId);
     Object.assign(profile, dto);
     return this.healthProfileRepo.save(profile);
   }
 
   getCompletionScore(userId: string): Promise<HealthProfileCompletionDto> {
-    return this.getProfileByUserId(userId).then((profile) =>
-      this.calculateCompletion(profile),
-    );
+    return this.getProfileByUserId(userId).then((profile) => this.calculateCompletion(profile));
   }
 
   calculateCompletion(profile: HealthProfile): HealthProfileCompletionDto {
@@ -65,17 +60,12 @@ export class HealthProfileService {
     }
 
     const filledCount = OPTIONAL_PROFILE_FIELDS.length - missingFields.length;
-    const score = Math.round(
-      (filledCount / OPTIONAL_PROFILE_FIELDS.length) * 100,
-    );
+    const score = Math.round((filledCount / OPTIONAL_PROFILE_FIELDS.length) * 100);
 
     return { score, missingFields };
   }
 
-  private isFieldFilled(
-    profile: HealthProfile,
-    field: OptionalProfileField,
-  ): boolean {
+  private isFieldFilled(profile: HealthProfile, field: OptionalProfileField): boolean {
     const value = profile[field];
 
     if (field === 'healthGoals') {

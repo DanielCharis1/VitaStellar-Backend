@@ -122,7 +122,8 @@ export class AdminUsersController {
   @Patch(':id/role')
   @ApiOperation({
     summary: 'Change user role',
-    description: 'Updates the role of a specific user. Cannot change own role. Requires ADMIN role.',
+    description:
+      'Updates the role of a specific user. Cannot change own role. Requires ADMIN role.',
   })
   @ApiParam({
     name: 'id',
@@ -151,11 +152,7 @@ export class AdminUsersController {
     status: 404,
     description: 'User not found',
   })
-  async changeRole(
-    @Req() req,
-    @Param('id') id: string,
-    @Body() dto: ChangeRoleDto,
-  ) {
+  async changeRole(@Req() req, @Param('id') id: string, @Body() dto: ChangeRoleDto) {
     const adminId = req.user.sub;
     return this.adminUsersService.changeRole(adminId, id, dto.role);
   }
@@ -205,11 +202,12 @@ export class AdminUsersController {
     const adminId = req.user.sub;
     return this.adminUsersService.reactivateUser(adminId, id);
   }
-// git add
+  // git add
   @Delete(':id')
   @ApiOperation({
     summary: 'Delete user account',
-    description: 'Permanently deletes a user account. Cannot delete own account. Requires ADMIN role.',
+    description:
+      'Permanently deletes a user account. Cannot delete own account. Requires ADMIN role.',
   })
   @ApiParam({
     name: 'id',

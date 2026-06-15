@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  ForbiddenException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { HealthTask, TaskCategory } from './entities/health-task.entity';
@@ -24,7 +20,7 @@ export class TasksService {
   constructor(
     @InjectRepository(HealthTask)
     private readonly healthTaskRepository: Repository<HealthTask>,
-    private readonly queueService: QueueService,
+    private readonly queueService: QueueService
   ) {}
 
   getCategories(): Array<{ value: string; label: string }> {
@@ -75,28 +71,23 @@ export class TasksService {
         jobId,
         attempts: 3,
         backoff: { type: 'exponential', delay: 1000 },
-      },
+      }
     );
   }
 
-  async create(
-    createTaskDto: CreateTaskDto,
-    userId: string,
-  ): Promise<HealthTask> {
+  async create(createTaskDto: CreateTaskDto, userId: string): Promise<HealthTask> {
     const task = this.healthTaskRepository.create({
       ...createTaskDto,
       createdBy: userId,
       status: TaskStatus.DRAFT,
-    });
+    } as any);
 
-    const saved = await this.healthTaskRepository.save(task);
+    const saved = (await this.healthTaskRepository.save(task)) as unknown as HealthTask;
     await this.scheduleReminderJob(saved);
     return saved;
   }
 
-  async findAll(
-    listTasksDto: ListTasksDto,
-  ): Promise<PaginatedResponseDto<HealthTask>> {
+  async findAll(listTasksDto: ListTasksDto): Promise<PaginatedResponseDto<HealthTask>> {
     const { page, limit, categoryId } = listTasksDto;
 
     const query = this.healthTaskRepository
@@ -134,7 +125,7 @@ export class TasksService {
     id: string,
     updateTaskDto: UpdateTaskDto,
     userId: string,
-    userRole: Role,
+    userRole: Role
   ): Promise<HealthTask> {
     const task = await this.findOne(id);
 
@@ -163,5 +154,30 @@ export class TasksService {
 
   async restore(id: string): Promise<void> {
     await this.healthTaskRepository.restore(id);
+  }
+
+  /**
+   * Find users with pending (incomplete) tasks.
+   */
+  async findUsersWithPendingTasks(): Promise<Array<{ id: string }>> {
+    const result = await this.healthTaskRepository
+      .createQueryBuilder('task')
+      .select('DISTINCT task.createdBy', 'id')
+      .where('task.status = :status', { status: TaskStatus.ACTIVE })
+      .andWhere('task.deletedAt IS NULL')
+      .andWhere('task.createdBy IS NOT NULL')
+      .getRawMany();
+    return result.filter((r: any) => r.id).map((r: any) => ({ id: r.id }));
+  }
+
+  /**
+   * Find incomplete tasks for a specific user.
+   */
+  async findIncompleteTasks(userId: string): Promise<Array<{ id: string; title: string }>> {
+    const tasks = await this.healthTaskRepository.find({
+      where: { createdBy: userId, status: TaskStatus.ACTIVE },
+      select: ['id', 'title'],
+    });
+    return tasks.map((t) => ({ id: t.id, title: t.title }));
   }
 }

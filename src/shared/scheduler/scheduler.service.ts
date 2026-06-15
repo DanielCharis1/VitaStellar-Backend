@@ -48,8 +48,9 @@ export class SchedulerService implements OnModuleInit {
    */
   getJobs() {
     const jobs = this.schedulerRegistry.getCronJobs();
-    return Array.from(jobs.keys()).map(name => {
+    return Array.from(jobs.keys()).map((name) => {
       const job = jobs.get(name);
+      if (!job) return { name, nextRun: 'not found', lastRun: null, isRunning: false };
       let nextRun;
       try {
         nextRun = job.nextDate().toISO();
@@ -60,7 +61,7 @@ export class SchedulerService implements OnModuleInit {
         name,
         nextRun,
         lastRun: job.lastDate(),
-        isRunning: job.running,
+        isRunning: (job as any).running ?? false,
       };
     });
   }
@@ -72,10 +73,7 @@ export class SchedulerService implements OnModuleInit {
     const job = this.schedulerRegistry.getCronJob(name);
     if (job) {
       this.logger.log(`Manually triggering job: ${name}`);
-      // CronJob internal reference might vary, but we can usually access the callback
-      // or just wait for the next tick if needed. 
-      // For standard usage, jobs usually wrap logic that can be called directly from their service.
-      job.fireOnTick();
+      (job as any).fireOnTick?.();
     } else {
       throw new Error(`Job ${name} not found`);
     }

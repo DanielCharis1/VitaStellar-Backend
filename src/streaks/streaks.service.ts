@@ -18,15 +18,11 @@ export class StreaksService {
     private readonly userRepo: Repository<User>,
     @InjectRepository(TaskCompletion)
     private readonly taskCompletionRepo: Repository<TaskCompletion>,
-    private readonly eventEmitter: EventEmitter2,
+    private readonly eventEmitter: EventEmitter2
   ) {}
 
   @OnEvent('user.registered')
-  async handleUserRegistered(event: {
-    userId: string;
-    email: string;
-    phoneNumber?: string;
-  }) {
+  async handleUserRegistered(event: { userId: string; email: string; phoneNumber?: string }) {
     this.logger.log(`Creating default streak for user: ${event.userId}`);
     const user = await this.userRepo.findOne({
       where: { id: event.userId },
@@ -82,7 +78,7 @@ export class StreaksService {
       .getMany();
 
     const completionDays = new Set(
-      completions.map((c) => c.completedAt.toISOString().slice(0, 10)),
+      completions.map((c) => c.completedAt.toISOString().slice(0, 10))
     );
 
     const history = [] as Array<Array<{ date: string; completed: boolean }>>;
@@ -115,7 +111,7 @@ export class StreaksService {
     xlmAmount: number;
   }) {
     this.logger.log(
-      `Updating streak for user ${event.userId} post task ${event.taskId} completion`,
+      `Updating streak for user ${event.userId} post task ${event.taskId} completion`
     );
     const streak = await this.streakRepo.findOne({
       where: { user: { id: event.userId } },
@@ -167,7 +163,7 @@ export class StreaksService {
     } else if (diffDays > 1) {
       // Missed a day, streak resets
       this.logger.log(
-        `User ${event.userId} missed a day. Streak resetting from ${streak.currentStreak} to 1.`,
+        `User ${event.userId} missed a day. Streak resetting from ${streak.currentStreak} to 1.`
       );
       streak.currentStreak = 1;
     }
@@ -179,9 +175,7 @@ export class StreaksService {
   }
 
   private emitMilestoneEvent(userId: string, milestoneDays: number) {
-    this.logger.log(
-      `Emitting milestone event for user ${userId} at ${milestoneDays} days.`,
-    );
+    this.logger.log(`Emitting milestone event for user ${userId} at ${milestoneDays} days.`);
     this.eventEmitter.emit('streak.milestone', {
       userId,
       milestoneDays,

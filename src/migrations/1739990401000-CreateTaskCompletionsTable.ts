@@ -1,14 +1,6 @@
-import {
-  MigrationInterface,
-  QueryRunner,
-  Table,
-  TableForeignKey,
-  TableIndex,
-} from 'typeorm';
+import { MigrationInterface, QueryRunner, Table, TableForeignKey, TableIndex } from 'typeorm';
 
-export class CreateTaskCompletionsTable1739990401000
-  implements MigrationInterface
-{
+export class CreateTaskCompletionsTable1739990401000 implements MigrationInterface {
   name = 'CreateTaskCompletionsTable1739990401000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -46,7 +38,7 @@ export class CreateTaskCompletionsTable1739990401000
           },
         ],
       }),
-      true,
+      true
     );
 
     // Add foreign key to users table
@@ -58,7 +50,7 @@ export class CreateTaskCompletionsTable1739990401000
         referencedTableName: 'users',
         referencedColumnNames: ['id'],
         onDelete: 'CASCADE',
-      }),
+      })
     );
 
     // Add index on userId and completedAt for efficient streak calculations
@@ -67,22 +59,16 @@ export class CreateTaskCompletionsTable1739990401000
       new TableIndex({
         name: 'idx_task_completions_user_completed',
         columnNames: ['userId', 'completedAt'],
-      }),
+      })
     );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     // Drop index first
-    await queryRunner.dropIndex(
-      'task_completions',
-      'idx_task_completions_user_completed',
-    );
+    await queryRunner.dropIndex('task_completions', 'idx_task_completions_user_completed');
 
     // Drop foreign key
-    await queryRunner.dropForeignKey(
-      'task_completions',
-      'fk_task_completions_user',
-    );
+    await queryRunner.dropForeignKey('task_completions', 'fk_task_completions_user');
 
     // Drop the table
     await queryRunner.dropTable('task_completions');

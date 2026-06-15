@@ -40,7 +40,7 @@ export class TaskDetailResponseDto {
       createdAt: Date;
     },
     completionHistory: CompletionRecordDto[] = [],
-    reminders: ReminderDto[] = [],
+    reminders: ReminderDto[] = []
   ): TaskDetailResponseDto {
     const dto = new TaskDetailResponseDto();
     dto.id = task.id;

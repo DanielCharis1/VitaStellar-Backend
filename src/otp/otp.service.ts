@@ -40,7 +40,7 @@ export class OtpService {
 
   constructor(
     private readonly configService: ConfigService,
-    private readonly eventEmitter: EventEmitter2,
+    private readonly eventEmitter: EventEmitter2
   ) {
     const config = redisConfig(configService);
     this.redis = new Redis(getRedisUrl(config));
@@ -63,8 +63,7 @@ export class OtpService {
       const ttl = await this.redis.ttl(lockKey);
       return {
         success: false,
-        message:
-          'Phone number is temporarily locked due to too many failed attempts',
+        message: 'Phone number is temporarily locked due to too many failed attempts',
         lockoutMinutes: Math.ceil(ttl / 60),
       };
     }
@@ -133,10 +132,7 @@ export class OtpService {
    * Verify OTP for a phone number
    * 3 failed attempts locks phone for 30 minutes
    */
-  async verifyOtp(
-    phoneNumber: string,
-    otp: string,
-  ): Promise<OtpVerificationResult> {
+  async verifyOtp(phoneNumber: string, otp: string): Promise<OtpVerificationResult> {
     const normalizedPhone = this.normalizePhoneNumber(phoneNumber);
     const otpKey = `${this.OTP_KEY_PREFIX}${normalizedPhone}`;
     const failedAttemptsKey = `${this.OTP_FAILED_ATTEMPTS_PREFIX}${normalizedPhone}`;
@@ -180,14 +176,11 @@ export class OtpService {
         // Clean up OTP
         await this.redis.del(otpKey);
 
-        this.logger.warn(
-          `Phone ${normalizedPhone} locked due to failed OTP attempts`,
-        );
+        this.logger.warn(`Phone ${normalizedPhone} locked due to failed OTP attempts`);
 
         return {
           success: false,
-          message:
-            'Too many failed attempts. Phone number is locked for 30 minutes.',
+          message: 'Too many failed attempts. Phone number is locked for 30 minutes.',
         };
       }
 
@@ -233,7 +226,7 @@ export class OtpService {
    * Check if a phone is currently locked
    */
   async isPhoneLocked(
-    phoneNumber: string,
+    phoneNumber: string
   ): Promise<{ locked: boolean; remainingMinutes?: number }> {
     const normalizedPhone = this.normalizePhoneNumber(phoneNumber);
     const lockKey = `${this.OTP_LOCK_PREFIX}${normalizedPhone}`;

@@ -16,14 +16,9 @@ import {
  * @ApiStandardResponse({ type: UserResponseDto, description: 'User retrieved successfully' })
  */
 export function ApiStandardResponse<TModel extends Type<any>>(
-  options: ApiResponseMetadata & { type?: TModel } = {},
+  options: ApiResponseMetadata & { type?: TModel } = {}
 ) {
-  const {
-    type,
-    description = 'Success',
-    status = 200,
-    ...restOptions
-  } = options;
+  const { type, description = 'Success', status = 200, ...restOptions } = options;
 
   const decorators: Array<ClassDecorator | MethodDecorator> = [
     ApiResponse({
@@ -82,7 +77,7 @@ export function ApiStandardResponse<TModel extends Type<any>>(
  */
 export function ApiPaginatedResponse<TModel extends Type<any>>(
   model: TModel,
-  options: Omit<ApiResponseMetadata, 'type'> = {},
+  options: Omit<ApiResponseMetadata, 'type'> = {}
 ) {
   const { description = 'Success', status = 200, ...restOptions } = options;
 
@@ -117,7 +112,7 @@ export function ApiPaginatedResponse<TModel extends Type<any>>(
     }),
     ApiInternalServerErrorResponse({
       description: 'Internal server error',
-    }),
+    })
   );
 }
 
@@ -129,10 +124,9 @@ export function ApiPaginatedResponse<TModel extends Type<any>>(
  */
 export function ApiCreatedResponse<TModel extends Type<any>>(
   model: TModel,
-  options: Omit<ApiResponseMetadata, 'type'> = {},
+  options: Omit<ApiResponseMetadata, 'type'> = {}
 ) {
-  const { description = 'Resource created successfully', ...restOptions } =
-    options;
+  const { description = 'Resource created successfully', ...restOptions } = options;
 
   return ApiStandardResponse({
     type: model,
@@ -148,11 +142,8 @@ export function ApiCreatedResponse<TModel extends Type<any>>(
  * Usage:
  * @ApiNoContentResponse({ description: 'Resource deleted successfully' })
  */
-export function ApiNoContentResponse(
-  options: Omit<ApiResponseMetadata, 'type' | 'status'> = {},
-) {
-  const { description = 'Resource deleted successfully', ...restOptions } =
-    options;
+export function ApiNoContentResponse(options: Omit<ApiResponseMetadata, 'type' | 'status'> = {}) {
+  const { description = 'Resource deleted successfully', ...restOptions } = options;
 
   return applyDecorators(
     ApiResponse({
@@ -165,6 +156,6 @@ export function ApiNoContentResponse(
     }),
     ApiNotFoundResponse({
       description: 'Resource not found',
-    }),
+    })
   );
 }

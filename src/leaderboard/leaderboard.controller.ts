@@ -37,14 +37,14 @@ export class LeaderboardController {
     @Req() req,
     @Query('limit') limit?: number,
     @Query('page') page?: number,
-    @Query('period') period?: string,
+    @Query('period') period?: string
   ): Promise<LeaderboardResponseDto> {
     return this.leaderboardService.getLeaderboard(
       req.user.id,
       limit || 10,
       undefined,
       page || 1,
-      parseLeaderboardPeriod(period),
+      parseLeaderboardPeriod(period)
     );
   }
 
@@ -83,12 +83,8 @@ export class LeaderboardController {
   async getByCountry(
     @Req() req,
     @Param('countryCode') countryCode: string,
-    @Query('limit') limit?: number,
+    @Query('limit') limit?: number
   ) {
-    return this.leaderboardService.getLeaderboard(
-      req.user.id,
-      limit || 50,
-      countryCode,
-    );
+    return this.leaderboardService.getLeaderboard(req.user.id, limit || 50, countryCode);
   }
 }

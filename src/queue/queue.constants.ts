@@ -31,8 +31,7 @@ export const TASK_REMINDER_JOB = 'task-reminder' as const;
 export const TASK_REMINDER_TEMPLATE = 'task-reminder' as const;
 
 // Queue Job Types for Task Verification Queue
-export const TASK_COMPLETION_VERIFICATION_JOB =
-  'task-completion-verification' as const;
+export const TASK_COMPLETION_VERIFICATION_JOB = 'task-completion-verification' as const;
 export const TASK_QUALITY_CHECK_JOB = 'task-quality-check' as const;
 export const TASK_APPROVAL_JOB = 'task-approval' as const;
 
@@ -67,9 +66,7 @@ export type TaskVerificationJobType =
   | typeof TASK_QUALITY_CHECK_JOB
   | typeof TASK_APPROVAL_JOB;
 
-export type DataProcessingJobType =
-  | typeof BULK_TASK_ASSIGNMENT_JOB
-  | typeof DATA_EXPORT_JOB;
+export type DataProcessingJobType = typeof BULK_TASK_ASSIGNMENT_JOB | typeof DATA_EXPORT_JOB;
 
 // All job types combined
 export type JobType =

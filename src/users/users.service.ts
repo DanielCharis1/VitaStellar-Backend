@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  Logger,
-  NotFoundException,
-  OnModuleInit,
-} from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { plainToInstance } from 'class-transformer';
@@ -26,7 +21,7 @@ export class UsersService implements OnModuleInit {
   constructor(
     @InjectRepository(User)
     public readonly userRepository: Repository<User>,
-    private readonly dataSource: DataSource,
+    private readonly dataSource: DataSource
   ) {}
 
   onModuleInit(): void {
@@ -65,7 +60,7 @@ export class UsersService implements OnModuleInit {
    */
   async updateProfile(
     userId: string,
-    updateProfileDto: UpdateProfileDto,
+    updateProfileDto: UpdateProfileDto
   ): Promise<UserResponseDto> {
     const user = await this.findById(userId);
 
@@ -192,9 +187,7 @@ export class UsersService implements OnModuleInit {
       .execute();
 
     const deletedCount = result.affected || 0;
-    this.logger.log(
-      `Cleaned up ${deletedCount} user status logs older than ${retentionDays} days`,
-    );
+    this.logger.log(`Cleaned up ${deletedCount} user status logs older than ${retentionDays} days`);
     return deletedCount;
   }
 }

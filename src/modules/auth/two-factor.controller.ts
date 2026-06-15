@@ -1,18 +1,5 @@
-import {
-  Controller,
-  Post,
-  Get,
-  Body,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiBearerAuth,
-  ApiSecurity,
-  ApiResponse,
-} from '@nestjs/swagger';
+import { Controller, Post, Get, Body, Req, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiSecurity, ApiResponse } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
 import { TwoFactorService } from './services/two-factor.service';
 import { TwoFactorCodeDto, TwoFactorBackupDto } from './dto/two-factor.dto';

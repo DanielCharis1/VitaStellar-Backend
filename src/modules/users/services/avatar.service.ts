@@ -2,9 +2,9 @@ import { Injectable, BadRequestException, NotFoundException } from '@nestjs/comm
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../../../entities/user.entity';
-import { StorageService } from '../../../storage/storage.service';
+import { StorageService } from '../../../shared/storage/storage.service';
 import { ActivityTrackerService } from './activity-tracker.service';
-import * as sharp from 'sharp';
+import sharp from 'sharp';
 
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -16,7 +16,7 @@ export class AvatarService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly storageService: StorageService,
-    private readonly activityTracker: ActivityTrackerService,
+    private readonly activityTracker: ActivityTrackerService
   ) {}
 
   async uploadAvatar(
@@ -24,12 +24,12 @@ export class AvatarService {
     file: Buffer,
     originalName: string,
     mimetype: string,
-    request?: any,
+    request?: any
   ): Promise<{ url: string; filename: string }> {
     this.validateFile(file, mimetype);
 
     const resizedImage = await this.resizeImage(file);
-    
+
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException('User not found');
@@ -37,26 +37,34 @@ export class AvatarService {
 
     const oldAvatarUrl = (user as any).avatarUrl;
 
-    const uploadResult = await this.storageService.saveFile(
-      resizedImage,
-      originalName,
+    const fileBuffer: Buffer = resizedImage;
+    const fileObj = {
+      originalname: originalName,
+      buffer: fileBuffer,
       mimetype,
-      'avatars',
-    );
+    };
+    const fileKey = await this.storageService.uploadFile(fileObj, 'avatars');
+    const url = await this.storageService.getDownloadUrl(fileKey);
 
     await this.userRepository.update(userId, {
-      walletAddress: uploadResult.url,
+      walletAddress: url,
     } as any);
 
     if (oldAvatarUrl) {
-      await this.storageService.deleteFileByUrl(oldAvatarUrl);
+      try {
+        // Extract key from old URL (URLs are pre-signed; key is the path portion)
+        const oldKey = oldAvatarUrl.split('?')[0].split('/').slice(-2).join('/');
+        await this.storageService.deleteFile(oldKey);
+      } catch {
+        // If we can't delete the old file, just continue
+      }
     }
 
-    await this.activityTracker.trackAvatarUpdated(userId, uploadResult.url, request);
+    await this.activityTracker.trackAvatarUpdated(userId, url, request);
 
     return {
-      url: uploadResult.url,
-      filename: uploadResult.filename,
+      url,
+      filename: fileKey,
     };
   }
 
@@ -67,7 +75,12 @@ export class AvatarService {
     }
 
     if ((user as any).avatarUrl) {
-      await this.storageService.deleteFileByUrl((user as any).avatarUrl);
+      try {
+        const oldKey = (user as any).avatarUrl.split('?')[0].split('/').slice(-2).join('/');
+        await this.storageService.deleteFile(oldKey);
+      } catch {
+        // If we can't delete the old file, just continue
+      }
       await this.userRepository.update(userId, {
         walletAddress: null,
       } as any);
@@ -84,13 +97,13 @@ export class AvatarService {
   private validateFile(file: Buffer, mimetype: string): void {
     if (!ALLOWED_MIME_TYPES.includes(mimetype)) {
       throw new BadRequestException(
-        `Invalid file type. Allowed types: ${ALLOWED_MIME_TYPES.join(', ')}`,
+        `Invalid file type. Allowed types: ${ALLOWED_MIME_TYPES.join(', ')}`
       );
     }
 
     if (file.length > MAX_FILE_SIZE) {
       throw new BadRequestException(
-        `File too large. Maximum size is ${MAX_FILE_SIZE / 1024 / 1024}MB`,
+        `File too large. Maximum size is ${MAX_FILE_SIZE / 1024 / 1024}MB`
       );
     }
   }

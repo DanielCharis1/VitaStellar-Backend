@@ -12,7 +12,7 @@ export class AddAuditRetentionAndIndexes1780000000000 implements MigrationInterf
         type: 'timestamp with time zone',
         isNullable: true,
         precision: 6,
-      }),
+      })
     );
 
     // Create indexes for improved query performance
@@ -23,7 +23,7 @@ export class AddAuditRetentionAndIndexes1780000000000 implements MigrationInterf
         name: 'IDX_audit_logs_created_at_desc',
         columnNames: ['created_at'],
         isUnique: false,
-      }),
+      })
     );
 
     // Index on retention_expires_at for efficient cleanup queries
@@ -33,7 +33,7 @@ export class AddAuditRetentionAndIndexes1780000000000 implements MigrationInterf
         name: 'IDX_audit_logs_retention_expires_at',
         columnNames: ['retention_expires_at'],
         isUnique: false,
-      }),
+      })
     );
 
     // Composite index for common queries on created_at and user_id
@@ -43,7 +43,7 @@ export class AddAuditRetentionAndIndexes1780000000000 implements MigrationInterf
         name: 'IDX_audit_logs_user_id_created_at',
         columnNames: ['user_id', 'created_at'],
         isUnique: false,
-      }),
+      })
     );
 
     // Composite index for compliance queries
@@ -53,7 +53,7 @@ export class AddAuditRetentionAndIndexes1780000000000 implements MigrationInterf
         name: 'IDX_audit_logs_is_compliance_created_at',
         columnNames: ['is_compliance_event', 'created_at'],
         isUnique: false,
-      }),
+      })
     );
   }
 

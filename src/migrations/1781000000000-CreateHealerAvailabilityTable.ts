@@ -33,11 +33,11 @@ export class CreateHealerAvailabilityTable1781000000000 implements MigrationInte
               default: 'now()',
             },
           ],
-        }),
+        })
       );
 
       await queryRunner.query(
-        `CREATE INDEX "IDX_healer_availability_healer_start" ON "healer_availability" ("healerId", "startTime")`,
+        `CREATE INDEX "IDX_healer_availability_healer_start" ON "healer_availability" ("healerId", "startTime")`
       );
     }
 
@@ -49,7 +49,7 @@ export class CreateHealerAvailabilityTable1781000000000 implements MigrationInte
           name: 'healerId',
           type: 'uuid',
           isNullable: true,
-        }),
+        })
       );
     }
   }

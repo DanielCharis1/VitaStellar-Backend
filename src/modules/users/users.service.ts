@@ -38,7 +38,7 @@ export class UsersService {
     @InjectRepository(UserStatusLog)
     private readonly userStatusLogRepository: Repository<UserStatusLog>,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
-    private readonly preferencesService: PreferencesService,
+    private readonly preferencesService: PreferencesService
   ) {}
 
   async registerDeviceToken(userId: string, token: string): Promise<User> {
@@ -475,7 +475,7 @@ export class UsersService {
 
     if (updateProfileDto.phoneNumber !== undefined) {
       const normalizedPhone = PhoneValidationUtil.normalizePhoneNumber(
-        updateProfileDto.phoneNumber,
+        updateProfileDto.phoneNumber
       );
       if (!normalizedPhone) {
         throw new BadRequestException('Invalid phone format');
@@ -548,12 +548,15 @@ export class UsersService {
 
     if (changedFields.length > 0) {
       const logger = new Logger(UsersService.name);
-      logger.log(`Profile updated for user ${userId}`, JSON.stringify({
-        changedFields,
-        ipAddress,
-        userAgent,
-        timestamp: new Date(),
-      }));
+      logger.log(
+        `Profile updated for user ${userId}`,
+        JSON.stringify({
+          changedFields,
+          ipAddress,
+          userAgent,
+          timestamp: new Date(),
+        })
+      );
     }
 
     return this.getProfile(updatedUser.id);

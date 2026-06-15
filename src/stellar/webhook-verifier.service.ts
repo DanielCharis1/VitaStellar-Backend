@@ -26,10 +26,7 @@ export class WebhookVerifierService {
       throw new UnauthorizedException('Missing webhook signature');
     }
 
-    const expected = crypto
-      .createHmac('sha256', this.secret)
-      .update(rawBody)
-      .digest('hex');
+    const expected = crypto.createHmac('sha256', this.secret).update(rawBody).digest('hex');
 
     const signatureBuffer = Buffer.from(signature, 'hex');
     const expectedBuffer = Buffer.from(expected, 'hex');

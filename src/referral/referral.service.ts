@@ -13,10 +13,7 @@ import { Repository } from 'typeorm';
 import { randomBytes } from 'crypto';
 import { User } from '../entities/user.entity';
 import { ReferralRecord } from './entities/referral-record.entity';
-import {
-  REWARD_DISTRIBUTION_JOB,
-  REWARD_QUEUE,
-} from '../queue/queue.constants';
+import { REWARD_DISTRIBUTION_JOB, REWARD_QUEUE } from '../queue/queue.constants';
 
 const REFERRAL_CODE_LENGTH = 8;
 const REFERRAL_REWARD_XLM = 1;
@@ -30,7 +27,7 @@ export class ReferralService {
     private readonly userRepo: Repository<User>,
     @InjectRepository(ReferralRecord)
     private readonly referralRepo: Repository<ReferralRecord>,
-    @InjectQueue(REWARD_QUEUE) private readonly rewardQueue: Queue,
+    @InjectQueue(REWARD_QUEUE) private readonly rewardQueue: Queue
   ) {}
 
   async generateReferralCode(userId: string): Promise<{ referralCode: string }> {
@@ -52,7 +49,7 @@ export class ReferralService {
 
   async redeemReferralCode(
     userId: string,
-    referralCode: string,
+    referralCode: string
   ): Promise<{ message: string; referrerId: string }> {
     const user = await this.userRepo.findOne({
       where: { id: userId },
@@ -97,10 +94,7 @@ export class ReferralService {
   }
 
   @OnEvent('task.completed')
-  async handleFirstHealthTaskCompletion(payload: {
-    userId: string;
-    completionId?: string;
-  }) {
+  async handleFirstHealthTaskCompletion(payload: { userId: string; completionId?: string }) {
     const userId = payload?.userId;
     if (!userId) return;
 
@@ -126,8 +120,7 @@ export class ReferralService {
 
     if (record.rewardPaid) return;
 
-    const completionId =
-      payload.completionId ?? `referral-first-task:${userId}`;
+    const completionId = payload.completionId ?? `referral-first-task:${userId}`;
 
     await this.rewardQueue.add(REWARD_DISTRIBUTION_JOB, {
       completionId,
@@ -140,16 +133,13 @@ export class ReferralService {
     await this.referralRepo.save(record);
 
     this.logger.log(
-      `Referral reward queued for referrer ${user.referredBy.id} (referred user ${userId})`,
+      `Referral reward queued for referrer ${user.referredBy.id} (referred user ${userId})`
     );
   }
 
   private async createUniqueCode(): Promise<string> {
     for (let attempt = 0; attempt < 10; attempt++) {
-      const code = randomBytes(4)
-        .toString('hex')
-        .toUpperCase()
-        .slice(0, REFERRAL_CODE_LENGTH);
+      const code = randomBytes(4).toString('hex').toUpperCase().slice(0, REFERRAL_CODE_LENGTH);
       const existing = await this.userRepo.findOne({
         where: { referralCode: code },
       });

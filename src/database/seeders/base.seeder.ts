@@ -50,7 +50,10 @@ export abstract class BaseSeeder {
       logger.log(`✅ Seeder ${name} - Completed successfully`);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      logger.error(`❌ Seeder ${name} - Failed:`, error instanceof Error ? error.stack : errorMessage);
+      logger.error(
+        `❌ Seeder ${name} - Failed:`,
+        error instanceof Error ? error.stack : errorMessage
+      );
       throw error;
     }
   }

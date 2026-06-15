@@ -10,12 +10,7 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Coupon } from './entities/coupon.entity';
 import { CouponService, ValidateCouponResult } from './coupon.service';
@@ -35,8 +30,7 @@ export class CouponController {
   @Get('me')
   @ApiOperation({
     summary: "Get current user's active coupons",
-    description:
-      "Returns the authenticated user's active (non-expired) coupons.",
+    description: "Returns the authenticated user's active (non-expired) coupons.",
   })
   @ApiResponse({ status: 200, description: 'List of active coupons' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -51,7 +45,7 @@ export class CouponController {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-    }),
+    })
   )
   @ApiOperation({
     summary: 'Validate coupon',
@@ -83,7 +77,7 @@ export class CouponController {
   })
   async validate(
     @Req() req: AuthenticatedRequest,
-    @Body() dto: ValidateCouponDto,
+    @Body() dto: ValidateCouponDto
   ): Promise<ValidateCouponResult> {
     return this.couponService.validate(dto, req.user.sub);
   }

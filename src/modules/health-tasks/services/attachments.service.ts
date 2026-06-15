@@ -7,16 +7,19 @@ import { TaskAttachment } from '../../../database/entities/task-attachment.entit
 export class AttachmentsService {
   constructor(
     @InjectRepository(TaskAttachment)
-    private readonly attachmentRepository: Repository<TaskAttachment>,
+    private readonly attachmentRepository: Repository<TaskAttachment>
   ) {}
 
-  async createAttachment(taskId: string, fileData: {
-    fileName: string;
-    fileUrl: string;
-    fileType: string;
-    fileSize: number;
-    uploadedBy?: string;
-  }): Promise<TaskAttachment> {
+  async createAttachment(
+    taskId: string,
+    fileData: {
+      fileName: string;
+      fileUrl: string;
+      fileType: string;
+      fileSize: number;
+      uploadedBy?: string;
+    }
+  ): Promise<TaskAttachment> {
     const attachment = this.attachmentRepository.create({
       taskId,
       ...fileData,

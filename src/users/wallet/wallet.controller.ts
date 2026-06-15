@@ -9,12 +9,7 @@ import {
   HttpStatus,
   Query,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { WalletService } from './wallet.service';
 import { WalletSummaryDto } from './dto/wallet-summary.dto';
 import { LinkWalletDto } from './dto/link-wallet.dto';
@@ -61,7 +56,7 @@ export class WalletController {
   })
   async linkWallet(
     @Request() req,
-    @Body() linkWalletDto: LinkWalletDto,
+    @Body() linkWalletDto: LinkWalletDto
   ): Promise<{ message: string }> {
     await this.walletService.linkWallet(req.user.sub, linkWalletDto.address);
     return { message: 'Wallet linked successfully' };
@@ -81,7 +76,7 @@ export class WalletController {
     @Query('limit') limit: number = 10,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
-    @Query('type') type?: string,
+    @Query('type') type?: string
   ) {
     return this.walletService.getTransactionHistory(
       req.user.sub,
@@ -89,7 +84,7 @@ export class WalletController {
       Number(limit),
       startDate,
       endDate,
-      type,
+      type
     );
   }
 }

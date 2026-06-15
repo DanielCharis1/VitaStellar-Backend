@@ -1,8 +1,4 @@
-import {
-  registerDecorator,
-  ValidationOptions,
-  ValidationArguments,
-} from 'class-validator';
+import { registerDecorator, ValidationOptions, ValidationArguments } from 'class-validator';
 import { PasswordValidatorService } from '../services/password-validator.service';
 
 /**
@@ -28,9 +24,9 @@ export function IsStrongPassword(
     requireLowercase?: boolean;
     requireNumbers?: boolean;
     requireSpecialChars?: boolean;
-  },
+  }
 ) {
-  return function (object: Object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'isStrongPassword',
       target: object.constructor,
@@ -76,9 +72,7 @@ export function IsStrongPassword(
             .map((error) => error.message)
             .join(', ');
 
-          return (
-            errorMessages || 'Password does not meet security requirements'
-          );
+          return errorMessages || 'Password does not meet security requirements';
         },
       },
     });
@@ -96,9 +90,9 @@ export function IsStrongPassword(
  */
 export function HasMinPasswordStrength(
   minStrength: number = 60,
-  validationOptions?: ValidationOptions,
+  validationOptions?: ValidationOptions
 ) {
-  return function (object: Object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'hasMinPasswordStrength',
       target: object.constructor,
@@ -112,8 +106,7 @@ export function HasMinPasswordStrength(
           return score >= minStrength;
         },
         defaultMessage(args?: ValidationArguments) {
-          const minStrengthVal =
-            (args?.constraints?.[0] as number) || minStrength;
+          const minStrengthVal = (args?.constraints?.[0] as number) || minStrength;
           return (
             (validationOptions?.message as any) ||
             `Password strength score must be at least ${minStrengthVal}. Current score: ${args?.value || 0}`
@@ -139,9 +132,9 @@ export function IsStrongPasswordCategory(
     'strong',
     'very_strong',
   ],
-  validationOptions?: ValidationOptions,
+  validationOptions?: ValidationOptions
 ) {
-  return function (object: Object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'isStrongPasswordCategory',
       target: object.constructor,
@@ -155,8 +148,7 @@ export function IsStrongPasswordCategory(
           return allowedCategories.includes(category as any);
         },
         defaultMessage(args?: ValidationArguments) {
-          const categories =
-            (args?.constraints?.[0] as string[]) || allowedCategories;
+          const categories = (args?.constraints?.[0] as string[]) || allowedCategories;
           return (
             (validationOptions?.message as any) ||
             `Password strength category must be one of: ${categories.join(', ')}`

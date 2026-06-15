@@ -71,7 +71,7 @@ export class TaskTemplatesService {
 
   listAccessible(userId: string): TaskTemplate[] {
     return Array.from(this.templates.values()).filter(
-      (t) => t.ownerId === userId || t.sharedWith.includes(userId),
+      (t) => t.ownerId === userId || t.sharedWith.includes(userId)
     );
   }
 
@@ -114,10 +114,13 @@ export class TaskTemplatesService {
     return template;
   }
 
-  instantiate(id: string, requesterId: string, overrides?: Partial<TaskTemplateFields>): TaskTemplateFields {
+  instantiate(
+    id: string,
+    requesterId: string,
+    overrides?: Partial<TaskTemplateFields>
+  ): TaskTemplateFields {
     const template = this.findById(id);
-    const hasAccess =
-      template.ownerId === requesterId || template.sharedWith.includes(requesterId);
+    const hasAccess = template.ownerId === requesterId || template.sharedWith.includes(requesterId);
 
     if (!hasAccess) {
       throw new ForbiddenException('You do not have access to this template');

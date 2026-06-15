@@ -8,7 +8,7 @@ export class AddReminderTimeToHealthTasks1780122539114 implements MigrationInter
         name: 'reminderTime',
         type: 'timestamptz',
         isNullable: true,
-      }),
+      })
     );
   }
 

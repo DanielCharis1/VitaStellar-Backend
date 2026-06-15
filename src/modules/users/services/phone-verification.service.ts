@@ -45,13 +45,10 @@ export class PhoneVerificationService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-    private readonly smsService: SmsService,
+    private readonly smsService: SmsService
   ) {}
 
-  async sendCode(
-    userId: string,
-    phoneNumber?: string,
-  ): Promise<SendPhoneVerificationResult> {
+  async sendCode(userId: string, phoneNumber?: string): Promise<SendPhoneVerificationResult> {
     const user = await this.getUserOrThrow(userId);
     const normalizedPhoneNumber = this.resolvePhoneNumber(user, phoneNumber);
 
@@ -88,30 +85,24 @@ export class PhoneVerificationService {
     if (elapsedSinceLastSend < this.resendCooldownMs) {
       throw new HttpException(
         `Please wait ${Math.ceil((this.resendCooldownMs - elapsedSinceLastSend) / 1000)} seconds before requesting another code`,
-        HttpStatus.TOO_MANY_REQUESTS,
+        HttpStatus.TOO_MANY_REQUESTS
       );
     }
 
     const nextSession = this.createSession(
       this.resolvePhoneNumber(user, session.phoneNumber),
-      session.resendCount + 1,
+      session.resendCount + 1
     );
     this.verificationSessions.set(userId, nextSession);
 
-    await this.smsService.sendVerificationCode(
-      nextSession.phoneNumber,
-      nextSession.code,
-    );
+    await this.smsService.sendVerificationCode(nextSession.phoneNumber, nextSession.code);
 
     this.logger.log(`Phone verification code resent for user ${userId}`);
 
     return this.toSendResult(nextSession);
   }
 
-  async validateCode(
-    userId: string,
-    code: string,
-  ): Promise<ValidatePhoneVerificationResult> {
+  async validateCode(userId: string, code: string): Promise<ValidatePhoneVerificationResult> {
     const session = this.getActiveSession(userId);
 
     if (session.code !== code.trim()) {
@@ -178,10 +169,7 @@ export class PhoneVerificationService {
     return normalizedPhoneNumber;
   }
 
-  private createSession(
-    phoneNumber: string,
-    resendCount: number,
-  ): PhoneVerificationSession {
+  private createSession(phoneNumber: string, resendCount: number): PhoneVerificationSession {
     const now = Date.now();
 
     return {
@@ -194,9 +182,7 @@ export class PhoneVerificationService {
     };
   }
 
-  private toSendResult(
-    session: PhoneVerificationSession,
-  ): SendPhoneVerificationResult {
+  private toSendResult(session: PhoneVerificationSession): SendPhoneVerificationResult {
     return {
       phoneNumber: session.phoneNumber,
       expiresAt: new Date(session.expiresAt),

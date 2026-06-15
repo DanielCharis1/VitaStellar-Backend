@@ -1,10 +1,4 @@
-import {
-  Injectable,
-  Inject,
-  Logger,
-  BadRequestException,
-  ConflictException,
-} from '@nestjs/common';
+import { Injectable, Inject, Logger, BadRequestException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -30,7 +24,7 @@ export class WalletService {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private stellarService: StellarService,
     private xlmPriceService: XlmPriceService,
-    private eventEmitter: EventEmitter2,
+    private eventEmitter: EventEmitter2
   ) {}
 
   async getWalletSummary(userId: string): Promise<WalletSummaryDto> {
@@ -55,9 +49,7 @@ export class WalletService {
     try {
       liveBalance = await this.stellarService.getAccountBalance(walletAddress);
     } catch (error: any) {
-      this.logger.warn(
-        `Failed to fetch balance for ${walletAddress}: ${error.message}`,
-      );
+      this.logger.warn(`Failed to fetch balance for ${walletAddress}: ${error.message}`);
     }
 
     // Total earned from tasks
@@ -84,9 +76,7 @@ export class WalletService {
 
     // Calculate balance in USD
     const balanceUsd =
-      liveBalance !== 'unavailable'
-        ? (parseFloat(liveBalance) * xlmUsdRate).toFixed(2)
-        : '0.00';
+      liveBalance !== 'unavailable' ? (parseFloat(liveBalance) * xlmUsdRate).toFixed(2) : '0.00';
 
     const summary: WalletSummaryDto = {
       walletAddress,
@@ -125,7 +115,7 @@ export class WalletService {
     const exists = await this.stellarService.accountExists(address);
     if (!exists) {
       throw new BadRequestException(
-        'Stellar account not found on the network. Please ensure it is funded.',
+        'Stellar account not found on the network. Please ensure it is funded.'
       );
     }
 
@@ -138,9 +128,7 @@ export class WalletService {
       if (alreadyLinked.id === userId) {
         return alreadyLinked; // Already linked to this user
       }
-      throw new ConflictException(
-        'This Stellar address is already linked to another account',
-      );
+      throw new ConflictException('This Stellar address is already linked to another account');
     }
 
     // 4. Update user
@@ -216,7 +204,7 @@ export class WalletService {
     limit: number = 10,
     startDate?: string,
     endDate?: string,
-    type?: string,
+    type?: string
   ) {
     const query = this.rewardTransactionRepo
       .createQueryBuilder('rt')

@@ -29,13 +29,13 @@ export class ActivityFeedService {
     @InjectRepository(RewardTransaction)
     private readonly rewardRepo: Repository<RewardTransaction>,
     @InjectRepository(Coupon)
-    private readonly couponRepo: Repository<Coupon>,
+    private readonly couponRepo: Repository<Coupon>
   ) {}
 
   async getActivityFeed(
     userId: string,
     page: number = 1,
-    limit: number = 20,
+    limit: number = 20
   ): Promise<PaginatedResponseDto<ActivityFeedItem>> {
     const [tasks, rewards, badges] = await Promise.all([
       this.fetchCompletedTasks(userId),
@@ -44,7 +44,7 @@ export class ActivityFeedService {
     ]);
 
     const merged = [...tasks, ...rewards, ...badges].sort(
-      (a, b) => b.occurredAt.getTime() - a.occurredAt.getTime(),
+      (a, b) => b.occurredAt.getTime() - a.occurredAt.getTime()
     );
 
     const total = merged.length;

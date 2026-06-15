@@ -19,7 +19,7 @@ export class CategoryService {
     private readonly categoryRepository: Repository<TaskCategory>,
 
     @InjectRedis()
-    private readonly redis: Redis,
+    private readonly redis: Redis
   ) {}
 
   /**
@@ -27,11 +27,7 @@ export class CategoryService {
    * Cached in Redis under "task_categories" for 1 hour.
    * Returns [] if none exist, never throws for an empty result.
    */
-  async findAll(
-    search?: string,
-    page = 1,
-    limit = 0,
-  ): Promise<CategoryResponseDto[]> {
+  async findAll(search?: string, page = 1, limit = 0): Promise<CategoryResponseDto[]> {
     const normalizedSearch = search?.trim();
     const shouldFilter = !!normalizedSearch;
     const shouldPaginate = page > 0 && limit > 0;
@@ -39,14 +35,20 @@ export class CategoryService {
     if (shouldFilter || shouldPaginate) {
       const query = this.categoryRepository
         .createQueryBuilder('category')
-        .select(['category.id', 'category.name', 'category.nameTranslations', 'category.icon', 'category.color'])
+        .select([
+          'category.id',
+          'category.name',
+          'category.nameTranslations',
+          'category.icon',
+          'category.color',
+        ])
         .where('category.isActive = true');
 
       if (shouldFilter) {
         const term = `%${normalizedSearch}%`;
         query.andWhere(
           '(category.name ILIKE :term OR category.nameTranslations::text ILIKE :term)',
-          { term },
+          { term }
         );
       }
 
@@ -94,12 +96,7 @@ export class CategoryService {
 
     // 3. Populate cache (fire-and-forget)
     try {
-      await this.redis.set(
-        CACHE_KEY,
-        JSON.stringify(result),
-        'EX',
-        CACHE_TTL_SECONDS,
-      );
+      await this.redis.set(CACHE_KEY, JSON.stringify(result), 'EX', CACHE_TTL_SECONDS);
       this.logger.debug(`Cached task categories (TTL ${CACHE_TTL_SECONDS}s)`);
     } catch (err) {
       this.logger.warn(`Redis write failed: ${err}`);
@@ -117,9 +114,7 @@ export class CategoryService {
     });
 
     if (!category) {
-      throw new NotFoundException(
-        `Category with id "${id}" not found or is deactivated`,
-      );
+      throw new NotFoundException(`Category with id "${id}" not found or is deactivated`);
     }
 
     return category as CategoryResponseDto;
@@ -139,10 +134,7 @@ export class CategoryService {
   /**
    * Update an existing task category
    */
-  async update(
-    id: string,
-    dto: UpdateCategoryDto,
-  ): Promise<CategoryResponseDto> {
+  async update(id: string, dto: UpdateCategoryDto): Promise<CategoryResponseDto> {
     const category = await this.categoryRepository.findOne({ where: { id } });
     if (!category) {
       throw new NotFoundException(`Category with id "${id}" not found`);

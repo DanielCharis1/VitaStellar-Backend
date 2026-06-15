@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  Logger,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Consultation } from './entities/consultation.entity';
@@ -28,7 +23,7 @@ export class ConsultationsService {
     private readonly consultationRepo: Repository<Consultation>,
     @InjectRepository(HealerAvailability)
     private readonly availabilityRepo: Repository<HealerAvailability>,
-    private readonly queueService: QueueService,
+    private readonly queueService: QueueService
   ) {}
 
   async setAvailability(healerId: string, startTime: Date, endTime: Date) {
@@ -91,7 +86,7 @@ export class ConsultationsService {
         scheduledAt: scheduledAt.toISOString(),
       },
       delayMs,
-      { attempts: 3 },
+      { attempts: 3 }
     );
 
     this.logger.log(`Scheduled consultation ${saved.id} for user ${userId}`);

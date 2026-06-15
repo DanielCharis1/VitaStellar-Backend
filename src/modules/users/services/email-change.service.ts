@@ -25,7 +25,7 @@ export class EmailChangeService {
 
   constructor(
     @InjectRepository(User)
-    private readonly userRepo: Repository<User>,
+    private readonly userRepo: Repository<User>
   ) {}
 
   async initiateChange(userId: string, newEmail: string): Promise<{ token: string }> {
@@ -91,7 +91,7 @@ export class EmailChangeService {
   getPendingRequest(userId: string): EmailChangeRequest | null {
     return (
       Array.from(this.pending.values()).find(
-        (r) => r.userId === userId && r.expiresAt > new Date(),
+        (r) => r.userId === userId && r.expiresAt > new Date()
       ) ?? null
     );
   }

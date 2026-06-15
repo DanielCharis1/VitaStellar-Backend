@@ -1,7 +1,11 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { UserPreferences, Theme, NotificationType } from '../../../database/entities/user-preferences.entity';
+import {
+  UserPreferences,
+  Theme,
+  NotificationType,
+} from '../../../database/entities/user-preferences.entity';
 import { User } from '../../../database/entities/user.entity';
 
 export interface UpdatePreferencesDto {
@@ -21,7 +25,7 @@ export class PreferencesService {
     @InjectRepository(UserPreferences)
     private readonly preferencesRepository: Repository<UserPreferences>,
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    private readonly userRepository: Repository<User>
   ) {}
 
   /**
@@ -121,7 +125,7 @@ export class PreferencesService {
    */
   async updatePreferences(
     userId: string,
-    updateData: UpdatePreferencesDto,
+    updateData: UpdatePreferencesDto
   ): Promise<UserPreferences> {
     const existingPreferences = await this.getPreferences(userId);
 
@@ -175,9 +179,9 @@ export class PreferencesService {
    */
   async resetPreferences(userId: string): Promise<UserPreferences> {
     const defaultPrefs = this.getDefaultPreferences();
-    
+
     await this.preferencesRepository.update(userId, defaultPrefs);
-    
+
     const preferences = await this.getPreferences(userId);
     this.logger.log(`Reset preferences to defaults for user: ${userId}`);
 
@@ -189,7 +193,7 @@ export class PreferencesService {
    */
   async deletePreferences(userId: string): Promise<void> {
     const result = await this.preferencesRepository.delete(userId);
-    
+
     if (result.affected === 0) {
       this.logger.warn(`No preferences found to delete for user: ${userId}`);
     } else {
@@ -202,7 +206,7 @@ export class PreferencesService {
    */
   async getPreferenceValue<K extends keyof UserPreferences>(
     userId: string,
-    key: K,
+    key: K
   ): Promise<UserPreferences[K]> {
     const preferences = await this.getPreferences(userId);
     return preferences[key];
@@ -214,12 +218,15 @@ export class PreferencesService {
   async isNotificationEnabled(
     userId: string,
     notificationType: NotificationType,
-    category: keyof UserPreferences['notifications'][NotificationType],
+    category: keyof UserPreferences['notifications'][NotificationType]
   ): Promise<boolean> {
     const preferences = await this.getPreferences(userId);
-    
-    return preferences.notifications[notificationType]?.enabled && 
-           preferences.notifications[notificationType]?.[category] || false;
+
+    return (
+      (preferences.notifications[notificationType]?.enabled &&
+        preferences.notifications[notificationType]?.[category]) ||
+      false
+    );
   }
 
   /**

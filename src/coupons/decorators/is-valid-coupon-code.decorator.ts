@@ -31,47 +31,47 @@ export class IsValidCouponCodeConstraint implements ValidatorConstraintInterface
 
   defaultMessage(args?: ValidationArguments) {
     const value = (args?.value as string) || '';
-    
+
     // Provide specific error message based on what's wrong
     if (value.length === 0) {
       return 'Coupon code cannot be empty';
     }
-    
+
     if (value.length < 6) {
       return `Coupon code must be at least 6 characters long (current: ${value.length})`;
     }
-    
+
     if (value.length > 20) {
       return `Coupon code must not exceed 20 characters (current: ${value.length})`;
     }
-    
+
     if (!/^[A-Za-z0-9-]+$/.test(value)) {
       return 'Coupon code can only contain letters, numbers, and hyphens. No spaces or special characters allowed';
     }
-    
+
     return 'Invalid coupon code format';
   }
 }
 
 /**
  * Custom decorator for validating coupon code format
- * 
+ *
  * Rules:
  * - Length: 6-20 characters
  * - Characters: Alphanumeric (A-Z, a-z, 0-9) and hyphens (-) only
  * - No special characters (!, @, #, $, %, spaces, etc.)
- * 
+ *
  * Usage:
  * @IsValidCouponCode({
  *   message: 'Invalid coupon code format'
  * })
  * code: string;
- * 
+ *
  * @IsValidCouponCode()
  * code: string;
  */
 export function IsValidCouponCode(validationOptions?: ValidationOptions) {
-  return function (object: Object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'isValidCouponCode',
       target: object.constructor,

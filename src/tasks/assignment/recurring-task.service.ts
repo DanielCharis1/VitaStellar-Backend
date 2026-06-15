@@ -19,7 +19,7 @@ export class RecurringTaskService {
     @InjectRepository(DailyTaskAssignment)
     private readonly assignmentRepo: Repository<DailyTaskAssignment>,
     @InjectRepository(User)
-    private readonly userRepo: Repository<User>,
+    private readonly userRepo: Repository<User>
   ) {}
 
   /**
@@ -51,11 +51,7 @@ export class RecurringTaskService {
   /**
    * Ensure a DailyTaskAssignment exists for the user/date and includes applicable tasks.
    */
-  private async ensureAssignments(
-    user: User,
-    date: string,
-    tasks: HealthTask[],
-  ): Promise<void> {
+  private async ensureAssignments(user: User, date: string, tasks: HealthTask[]): Promise<void> {
     let assignment = await this.assignmentRepo.findOne({
       where: { user: { id: user.id }, assignedDate: date },
       relations: ['tasks'],
@@ -82,7 +78,7 @@ export class RecurringTaskService {
         assignment.tasks = [...assignment.tasks, ...newTasks];
         await this.assignmentRepo.save(assignment);
         this.logger.debug(
-          `Updated assignment for user ${user.id} on ${date} with ${newTasks.length} new tasks`,
+          `Updated assignment for user ${user.id} on ${date} with ${newTasks.length} new tasks`
         );
       }
     }

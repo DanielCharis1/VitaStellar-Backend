@@ -26,7 +26,7 @@ export class PriorityService {
   resolvePriority(
     priority?: TaskPriority,
     dueDate?: Date | string | null,
-    now: Date = new Date(),
+    now: Date = new Date()
   ): TaskPriority {
     if (priority) {
       return priority;
@@ -35,10 +35,7 @@ export class PriorityService {
     return this.autoPrioritize(dueDate, now);
   }
 
-  autoPrioritize(
-    dueDate?: Date | string | null,
-    now: Date = new Date(),
-  ): TaskPriority {
+  autoPrioritize(dueDate?: Date | string | null, now: Date = new Date()): TaskPriority {
     if (!dueDate) {
       return TaskPriority.MEDIUM;
     }
@@ -66,17 +63,10 @@ export class PriorityService {
     return TaskPriority.LOW;
   }
 
-  sortByPriority<T extends PrioritizableTask>(
-    tasks: T[],
-    now: Date = new Date(),
-  ): T[] {
+  sortByPriority<T extends PrioritizableTask>(tasks: T[], now: Date = new Date()): T[] {
     return [...tasks].sort((left, right) => {
       const leftPriority = this.resolvePriority(left.priority, left.dueDate, now);
-      const rightPriority = this.resolvePriority(
-        right.priority,
-        right.dueDate,
-        now,
-      );
+      const rightPriority = this.resolvePriority(right.priority, right.dueDate, now);
 
       const byPriority =
         PriorityService.PRIORITY_ORDER[leftPriority] -
@@ -103,10 +93,7 @@ export class PriorityService {
     });
   }
 
-  buildOverdueAlert(
-    task: PrioritizableTask,
-    now: Date = new Date(),
-  ): string | null {
+  buildOverdueAlert(task: PrioritizableTask, now: Date = new Date()): string | null {
     const dueDate = this.parseDueDate(task.dueDate);
     if (!dueDate) {
       return null;

@@ -50,18 +50,18 @@ export class RateLimiterService {
     this.userLimit = this.parsePositiveInt(configService.get<string>('RATE_LIMIT_USER_LIMIT'), 100);
     this.userWindowSeconds = this.parsePositiveInt(
       configService.get<string>('RATE_LIMIT_USER_WINDOW_SECONDS'),
-      60,
+      60
     );
     this.ipLimit = this.parsePositiveInt(configService.get<string>('RATE_LIMIT_IP_LIMIT'), 50);
     this.ipWindowSeconds = this.parsePositiveInt(
       configService.get<string>('RATE_LIMIT_IP_WINDOW_SECONDS'),
-      60,
+      60
     );
   }
 
   async consumeUser(
     userId: string,
-    overrides: RateLimiterOverrides = {},
+    overrides: RateLimiterOverrides = {}
   ): Promise<RateLimitStatus> {
     return this.consumeSingle('user', userId, {
       limit: overrides.userLimit ?? this.userLimit,
@@ -78,7 +78,7 @@ export class RateLimiterService {
 
   async consume(
     target: RateLimiterTarget,
-    overrides: RateLimiterOverrides = {},
+    overrides: RateLimiterOverrides = {}
   ): Promise<RateLimitStatus[]> {
     const results: RateLimitStatus[] = [];
 
@@ -93,7 +93,10 @@ export class RateLimiterService {
     return results;
   }
 
-  async isBlocked(target: RateLimiterTarget, overrides: RateLimiterOverrides = {}): Promise<boolean> {
+  async isBlocked(
+    target: RateLimiterTarget,
+    overrides: RateLimiterOverrides = {}
+  ): Promise<boolean> {
     const statuses = await this.consume(target, overrides);
     return statuses.some((status) => !status.allowed);
   }
@@ -101,7 +104,7 @@ export class RateLimiterService {
   private async consumeSingle(
     type: 'user' | 'ip',
     identifier: string,
-    options: { limit: number; windowSeconds: number },
+    options: { limit: number; windowSeconds: number }
   ): Promise<RateLimitStatus> {
     const key = this.buildKey(type, identifier);
     const { current, ttl } = await this.incrementKey(key, options.windowSeconds);
@@ -124,7 +127,7 @@ export class RateLimiterService {
 
   private async incrementKey(
     key: string,
-    windowSeconds: number,
+    windowSeconds: number
   ): Promise<{ current: number; ttl: number }> {
     try {
       const current = await this.redis.incr(key);

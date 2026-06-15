@@ -5,9 +5,10 @@ import { HealerAvailability } from './entities/availability.entity';
 import { ConsultationsService } from './consultations.service';
 import { ConsultationsController } from './consultations.controller';
 import { QueueService } from '../../shared/queue/queue.service';
+import { QueueModule } from '../../queue/queue.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Consultation, HealerAvailability])],
+  imports: [TypeOrmModule.forFeature([Consultation, HealerAvailability]), QueueModule],
   controllers: [ConsultationsController],
   providers: [ConsultationsService, QueueService],
   exports: [ConsultationsService],

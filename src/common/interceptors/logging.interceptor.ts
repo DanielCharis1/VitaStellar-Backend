@@ -1,10 +1,4 @@
-import {
-  Injectable,
-  NestInterceptor,
-  ExecutionContext,
-  CallHandler,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, NestInterceptor, ExecutionContext, CallHandler, Logger } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { Request, Response } from 'express';
@@ -18,7 +12,7 @@ export class LoggingInterceptor implements NestInterceptor {
 
   constructor(
     @InjectRepository(RequestLog)
-    private readonly requestLogRepository: Repository<RequestLog>,
+    private readonly requestLogRepository: Repository<RequestLog>
   ) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
@@ -42,9 +36,7 @@ export class LoggingInterceptor implements NestInterceptor {
         const statusCode = response.statusCode;
 
         // Log successful response
-        this.logger.log(
-          `${method} ${url} - ${statusCode} - ${responseTime}ms`,
-        );
+        this.logger.log(`${method} ${url} - ${statusCode} - ${responseTime}ms`);
 
         // Store log in database
         await this.storeLog({
@@ -67,7 +59,7 @@ export class LoggingInterceptor implements NestInterceptor {
 
         // Log error response
         this.logger.error(
-          `${method} ${url} - ${statusCode} - ${responseTime}ms - ${error.message}`,
+          `${method} ${url} - ${statusCode} - ${responseTime}ms - ${error.message}`
         );
 
         // Store error log in database
@@ -86,7 +78,7 @@ export class LoggingInterceptor implements NestInterceptor {
         });
 
         throw error;
-      }),
+      })
     );
   }
 

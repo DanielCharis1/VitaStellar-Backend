@@ -54,7 +54,7 @@ export class Coupon {
     let result = '';
     for (let i = 0; i < CODE_LENGTH; i++) {
       result += UPPERCASE_ALPHANUMERIC.charAt(
-        Math.floor(Math.random() * UPPERCASE_ALPHANUMERIC.length),
+        Math.floor(Math.random() * UPPERCASE_ALPHANUMERIC.length)
       );
     }
     this.code = result;

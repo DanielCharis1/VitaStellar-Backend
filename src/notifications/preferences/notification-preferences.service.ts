@@ -9,10 +9,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { NotificationPreference } from '../entities/notification-preference.entity';
-import {
-  UpdatePreferencesDto,
-  isValidTimezone,
-} from './dto/update-preferences.dto';
+import { UpdatePreferencesDto, isValidTimezone } from './dto/update-preferences.dto';
 
 @Injectable()
 export class NotificationPreferencesService implements OnModuleInit {
@@ -21,27 +18,22 @@ export class NotificationPreferencesService implements OnModuleInit {
   constructor(
     @InjectRepository(NotificationPreference)
     private readonly preferencesRepository: Repository<NotificationPreference>,
-    private readonly eventEmitter: EventEmitter2,
+    private readonly eventEmitter: EventEmitter2
   ) {}
 
   onModuleInit() {
     // Listen for user.registered event to create default preferences
-    this.eventEmitter.on(
-      'user.registered',
-      async (data: { userId: string }) => {
-        try {
-          await this.createDefaultsForNewUser(data.userId);
-          this.logger.log(
-            `Default notification preferences created for new user: ${data.userId}`,
-          );
-        } catch (error) {
-          this.logger.error(
-            `Failed to create default preferences for user ${data.userId}:`,
-            error.message,
-          );
-        }
-      },
-    );
+    this.eventEmitter.on('user.registered', async (data: { userId: string }) => {
+      try {
+        await this.createDefaultsForNewUser(data.userId);
+        this.logger.log(`Default notification preferences created for new user: ${data.userId}`);
+      } catch (error) {
+        this.logger.error(
+          `Failed to create default preferences for user ${data.userId}:`,
+          error.message
+        );
+      }
+    });
   }
 
   /**
@@ -65,30 +57,23 @@ export class NotificationPreferencesService implements OnModuleInit {
    */
   async updatePreferences(
     userId: string,
-    updateDto: UpdatePreferencesDto,
+    updateDto: UpdatePreferencesDto
   ): Promise<NotificationPreference> {
     // Validate timezone if provided
     if (updateDto.timezone && !isValidTimezone(updateDto.timezone)) {
       throw new BadRequestException(
-        `Invalid timezone '${updateDto.timezone}'. Please provide a valid IANA timezone.`,
+        `Invalid timezone '${updateDto.timezone}'. Please provide a valid IANA timezone.`
       );
     }
 
     // Validate quiet hours format if provided
     if (updateDto.quietHoursStart || updateDto.quietHoursEnd) {
       const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
-      if (
-        updateDto.quietHoursStart &&
-        !timeRegex.test(updateDto.quietHoursStart)
-      ) {
-        throw new BadRequestException(
-          'quietHoursStart must be in HH:mm format (e.g., 22:00)',
-        );
+      if (updateDto.quietHoursStart && !timeRegex.test(updateDto.quietHoursStart)) {
+        throw new BadRequestException('quietHoursStart must be in HH:mm format (e.g., 22:00)');
       }
       if (updateDto.quietHoursEnd && !timeRegex.test(updateDto.quietHoursEnd)) {
-        throw new BadRequestException(
-          'quietHoursEnd must be in HH:mm format (e.g., 07:00)',
-        );
+        throw new BadRequestException('quietHoursEnd must be in HH:mm format (e.g., 07:00)');
       }
     }
 
@@ -103,7 +88,9 @@ export class NotificationPreferencesService implements OnModuleInit {
 
     // Update only provided fields
     Object.assign(preferences, updateDto);
-    const updated = await this.preferencesRepository.save(preferences);
+    const updated = (await this.preferencesRepository.save(
+      preferences
+    )) as unknown as NotificationPreference;
 
     this.logger.log(`Notification preferences updated for user: ${userId}`);
 
@@ -113,9 +100,7 @@ export class NotificationPreferencesService implements OnModuleInit {
   /**
    * Create default notification preferences for a user
    */
-  async createDefaultPreferences(
-    userId: string,
-  ): Promise<NotificationPreference> {
+  async createDefaultPreferences(userId: string): Promise<NotificationPreference> {
     const defaultPreferences = this.preferencesRepository.create({
       userId,
       taskReminders: true,
@@ -124,9 +109,9 @@ export class NotificationPreferencesService implements OnModuleInit {
       quietHoursStart: null,
       quietHoursEnd: null,
       timezone: 'Africa/Lagos',
-    });
+    } as any);
 
-    return this.preferencesRepository.save(defaultPreferences);
+    return this.preferencesRepository.save(defaultPreferences) as unknown as NotificationPreference;
   }
 
   /**
@@ -134,8 +119,6 @@ export class NotificationPreferencesService implements OnModuleInit {
    */
   async createDefaultsForNewUser(userId: string): Promise<void> {
     await this.createDefaultPreferences(userId);
-    this.logger.log(
-      `Default notification preferences created for new user: ${userId}`,
-    );
+    this.logger.log(`Default notification preferences created for new user: ${userId}`);
   }
 }

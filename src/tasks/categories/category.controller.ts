@@ -12,13 +12,7 @@ import {
   HttpStatus,
   UseGuards,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-  ApiQuery,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto';
 import { CategoryResponseDto } from './dto/category-response.dto';
@@ -74,7 +68,7 @@ export class CategoryController {
   findAll(
     @Query('search') search?: string,
     @Query('page') page?: string,
-    @Query('limit') limit?: string,
+    @Query('limit') limit?: string
   ): Promise<CategoryResponseDto[]> {
     const parsedPage = page ? Number(page) : 1;
     const parsedLimit = limit ? Number(limit) : 0;
@@ -91,9 +85,7 @@ export class CategoryController {
   @ApiOperation({ summary: 'Get a task category by ID (public)' })
   @ApiResponse({ status: 200, type: CategoryResponseDto })
   @ApiResponse({ status: 404, description: 'Category not found' })
-  findOne(
-    @Param('id', ParseUUIDPipe) id: string,
-  ): Promise<CategoryResponseDto> {
+  findOne(@Param('id', ParseUUIDPipe) id: string): Promise<CategoryResponseDto> {
     return this.categoryService.findOne(id);
   }
 
@@ -121,7 +113,7 @@ export class CategoryController {
   @ApiResponse({ status: 200, type: CategoryResponseDto })
   update(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() dto: UpdateCategoryDto,
+    @Body() dto: UpdateCategoryDto
   ): Promise<CategoryResponseDto> {
     return this.categoryService.update(id, dto);
   }

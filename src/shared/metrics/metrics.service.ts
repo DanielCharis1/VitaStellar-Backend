@@ -24,7 +24,7 @@ export class MetricsService {
     @InjectMetric('system_memory_usage_bytes')
     private readonly memoryUsage: Gauge<string>,
     @InjectMetric('system_cpu_usage_percent')
-    private readonly cpuUsage: Gauge<string>,
+    private readonly cpuUsage: Gauge<string>
   ) {}
 
   incrementHttpRequests(method: string, route: string, statusCode: number) {

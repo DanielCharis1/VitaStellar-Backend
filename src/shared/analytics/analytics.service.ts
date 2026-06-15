@@ -56,7 +56,7 @@ export class ExternalAnalyticsProvider implements AnalyticsProvider {
 
   constructor(
     private readonly apiKey?: string,
-    private readonly endpoint: string = 'https://analytics.example.com/track',
+    private readonly endpoint: string = 'https://analytics.example.com/track'
   ) {}
 
   async trackEvent(eventName: string, payload: Record<string, unknown> = {}): Promise<void> {
@@ -69,7 +69,10 @@ export class ExternalAnalyticsProvider implements AnalyticsProvider {
       this.logger.warn(`[ExternalAnalytics] sending event ${eventName} to ${this.endpoint}`);
       this.logger.debug(JSON.stringify({ apiKey: this.apiKey, eventName, payload }));
     } catch (error) {
-      this.logger.error('[ExternalAnalytics] failed to track event', error instanceof Error ? error.stack : String(error));
+      this.logger.error(
+        '[ExternalAnalytics] failed to track event',
+        error instanceof Error ? error.stack : String(error)
+      );
     }
   }
 }
@@ -90,7 +93,7 @@ export class AnalyticsService {
 
   constructor(
     @Inject(ANALYTICS_PROVIDERS)
-    private readonly providers: AnalyticsProvider[],
+    private readonly providers: AnalyticsProvider[]
   ) {}
 
   /**
@@ -101,9 +104,12 @@ export class AnalyticsService {
     await Promise.all(
       this.providers.map((provider) =>
         provider.trackEvent(eventName, payload).catch((error) => {
-          this.logger.error(`[AnalyticsService] provider failed to track ${eventName}`, error instanceof Error ? error.stack : String(error));
-        }),
-      ),
+          this.logger.error(
+            `[AnalyticsService] provider failed to track ${eventName}`,
+            error instanceof Error ? error.stack : String(error)
+          );
+        })
+      )
     );
   }
 

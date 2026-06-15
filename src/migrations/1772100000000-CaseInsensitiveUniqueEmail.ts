@@ -4,9 +4,7 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  * Replaces the case-sensitive UNIQUE on users.email with a unique index on
  * LOWER(email), so duplicates differing only by case are rejected at the DB layer.
  */
-export class CaseInsensitiveUniqueEmail1772100000000
-  implements MigrationInterface
-{
+export class CaseInsensitiveUniqueEmail1772100000000 implements MigrationInterface {
   name = 'CaseInsensitiveUniqueEmail1772100000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -43,7 +41,7 @@ export class CaseInsensitiveUniqueEmail1772100000000
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`DROP INDEX IF EXISTS "UQ_users_email_lower"`);
     await queryRunner.query(
-      `ALTER TABLE "users" ADD CONSTRAINT "users_email_key" UNIQUE ("email")`,
+      `ALTER TABLE "users" ADD CONSTRAINT "users_email_key" UNIQUE ("email")`
     );
   }
 }

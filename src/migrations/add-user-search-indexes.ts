@@ -138,7 +138,7 @@ export class AddUserSearchIndexes1234567890 implements MigrationInterface {
     // This enables more efficient fuzzy matching
     try {
       await queryRunner.query(`CREATE EXTENSION IF NOT EXISTS pg_trgm;`);
-      
+
       // Create trigram indexes for fuzzy matching
       await queryRunner.query(`
         CREATE INDEX IF NOT EXISTS "IDX_USER_FIRST_NAME_TRIGRAM" 

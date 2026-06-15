@@ -2,10 +2,7 @@ import { Process, Processor } from '@nestjs/bull';
 import { Job } from 'bull';
 import { Logger } from '@nestjs/common';
 import { DATA_PROCESSING_QUEUE, USER_DATA_EXPORT_JOB } from '../../../queue/queue.constants';
-import {
-  DataExportJobPayload,
-  DataExportService,
-} from '../services/data-export.service';
+import { DataExportJobPayload, DataExportService } from '../services/data-export.service';
 
 @Processor(DATA_PROCESSING_QUEUE)
 export class DataExportProcessor {

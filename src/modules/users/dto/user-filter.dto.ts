@@ -8,7 +8,7 @@ export class UserFilterDto extends PaginationDto {
   @ApiPropertyOptional({
     description: 'Filter by user role',
     enum: Role,
-    example: Role.USER
+    example: Role.USER,
   })
   @IsOptional()
   @IsEnum(Role)
@@ -16,7 +16,7 @@ export class UserFilterDto extends PaginationDto {
 
   @ApiPropertyOptional({
     description: 'Filter by active status',
-    example: true
+    example: true,
   })
   @IsOptional()
   @IsBoolean()
@@ -25,7 +25,7 @@ export class UserFilterDto extends PaginationDto {
 
   @ApiPropertyOptional({
     description: 'Filter by verification status',
-    example: true
+    example: true,
   })
   @IsOptional()
   @IsBoolean()
@@ -35,7 +35,7 @@ export class UserFilterDto extends PaginationDto {
   @ApiPropertyOptional({
     description: 'Filter users created from this date',
     example: '2024-01-01T00:00:00.000Z',
-    type: String
+    type: String,
   })
   @IsOptional()
   @IsDateString()
@@ -44,7 +44,7 @@ export class UserFilterDto extends PaginationDto {
   @ApiPropertyOptional({
     description: 'Filter users created up to this date',
     example: '2024-12-31T23:59:59.999Z',
-    type: String
+    type: String,
   })
   @IsOptional()
   @IsDateString()
@@ -53,7 +53,7 @@ export class UserFilterDto extends PaginationDto {
   @ApiPropertyOptional({
     description: 'Filter users last active from this date',
     example: '2024-01-01T00:00:00.000Z',
-    type: String
+    type: String,
   })
   @IsOptional()
   @IsDateString()
@@ -62,7 +62,7 @@ export class UserFilterDto extends PaginationDto {
   @ApiPropertyOptional({
     description: 'Filter users last active up to this date',
     example: '2024-12-31T23:59:59.999Z',
-    type: String
+    type: String,
   })
   @IsOptional()
   @IsDateString()
@@ -70,7 +70,7 @@ export class UserFilterDto extends PaginationDto {
 
   @ApiPropertyOptional({
     description: 'Filter by country code',
-    example: 'US'
+    example: 'US',
   })
   @IsOptional()
   @IsString()
@@ -78,7 +78,7 @@ export class UserFilterDto extends PaginationDto {
 
   @ApiPropertyOptional({
     description: 'Filter by preferred language',
-    example: 'en'
+    example: 'en',
   })
   @IsOptional()
   @IsString()
@@ -86,7 +86,7 @@ export class UserFilterDto extends PaginationDto {
 
   @ApiPropertyOptional({
     description: 'Filter by wallet address (partial match)',
-    example: 'GABC...'
+    example: 'GABC...',
   })
   @IsOptional()
   @IsString()
@@ -94,7 +94,7 @@ export class UserFilterDto extends PaginationDto {
 
   @ApiPropertyOptional({
     description: 'Filter by stellar wallet address (partial match)',
-    example: 'GABC...'
+    example: 'GABC...',
   })
   @IsOptional()
   @IsString()
@@ -102,7 +102,7 @@ export class UserFilterDto extends PaginationDto {
 
   @ApiPropertyOptional({
     description: 'Filter by referral code',
-    example: 'REF123'
+    example: 'REF123',
   })
   @IsOptional()
   @IsString()
@@ -110,8 +110,8 @@ export class UserFilterDto extends PaginationDto {
 
   @ApiPropertyOptional({
     description: 'Filter by minimum daily XLM earned',
-    example: 10.50,
-    type: Number
+    example: 10.5,
+    type: Number,
   })
   @IsOptional()
   @Type(() => Number)
@@ -119,8 +119,8 @@ export class UserFilterDto extends PaginationDto {
 
   @ApiPropertyOptional({
     description: 'Filter by maximum daily XLM earned',
-    example: 100.00,
-    type: Number
+    example: 100.0,
+    type: Number,
   })
   @IsOptional()
   @Type(() => Number)
@@ -128,7 +128,7 @@ export class UserFilterDto extends PaginationDto {
 
   @ApiPropertyOptional({
     description: 'Filter by phone number (partial match)',
-    example: '+1234567890'
+    example: '+1234567890',
   })
   @IsOptional()
   @IsString()
@@ -136,7 +136,7 @@ export class UserFilterDto extends PaginationDto {
 
   @ApiPropertyOptional({
     description: 'Filter users with or without password reset tokens',
-    example: false
+    example: false,
   })
   @IsOptional()
   @IsBoolean()
@@ -145,7 +145,7 @@ export class UserFilterDto extends PaginationDto {
 
   @ApiPropertyOptional({
     description: 'Filter users with or without email verification tokens',
-    example: false
+    example: false,
   })
   @IsOptional()
   @IsBoolean()

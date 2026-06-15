@@ -14,12 +14,12 @@ export class RequestSigningGuard implements CanActivate {
 
   constructor(
     private readonly signingService: SigningService,
-    private readonly configService: ConfigService,
+    private readonly configService: ConfigService
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    
+
     const signature = request.headers['x-signature'];
     const timestampHeader = request.headers['x-timestamp'];
     const keyId = request.headers['x-key-id'];
@@ -53,7 +53,7 @@ export class RequestSigningGuard implements CanActivate {
       request.path,
       request.body,
       timestamp,
-      expectedSecret,
+      expectedSecret
     );
 
     if (!isValid) {

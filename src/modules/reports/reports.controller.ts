@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Query,
-  Res,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, Res, UseGuards } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -64,7 +56,7 @@ export class ReportsController {
   constructor(
     private readonly reportsService: ReportsService,
     private readonly reportExportService: ReportExportService,
-    private readonly schedulerService: ReportsSchedulerService,
+    private readonly schedulerService: ReportsSchedulerService
   ) {}
 
   @Get('users')
@@ -91,10 +83,7 @@ export class ReportsController {
   @Get('export/rewards')
   @ApiOperation({ summary: 'Export rewards data as JSON or CSV' })
   @ApiQuery({ name: 'format', enum: ['json', 'csv'], required: false })
-  async exportRewards(
-    @Query('format') format: string = 'json',
-    @Res() res: Response,
-  ) {
+  async exportRewards(@Query('format') format: string = 'json', @Res() res: Response) {
     if (format === 'csv') {
       const csvStream = this.reportExportService.streamRewardsCsv();
       res.setHeader('Content-Type', 'text/csv');
@@ -121,10 +110,7 @@ export class ReportsController {
     description: 'CSV report generated and streamed',
     schema: { type: 'string', format: 'binary' },
   })
-  async exportReport(
-    @Query('type') type: string = 'users',
-    @Res() res: Response,
-  ): Promise<void> {
+  async exportReport(@Query('type') type: string = 'users', @Res() res: Response): Promise<void> {
     try {
       const reportType = type as any;
       const csvContent = await this.reportsService.generateReportCsv(reportType);
@@ -132,7 +118,7 @@ export class ReportsController {
       res.setHeader('Content-Type', 'text/csv; charset=utf-8');
       res.setHeader(
         'Content-Disposition',
-        `attachment; filename="report-${reportType}-${new Date().toISOString().split('T')[0]}.csv"`,
+        `attachment; filename="report-${reportType}-${new Date().toISOString().split('T')[0]}.csv"`
       );
       res.send(csvContent);
     } catch (error) {
@@ -147,30 +133,30 @@ export class ReportsController {
   @Post('schedule')
   @ApiOperation({ summary: 'Create a scheduled report' })
   @ApiResponse({ status: 201, description: 'Scheduled report created' })
-  async scheduleReport(@Body() dto: ScheduleReportDto) {
+  async scheduleReport(@Body() dto: ScheduleReportDto): Promise<any> {
     return this.schedulerService.scheduleReport(
       dto.name,
       dto.cronExpression,
       dto.reportType,
-      dto.recipients,
+      dto.recipients
     );
   }
 
   @Get('schedules')
   @ApiOperation({ summary: 'List configured scheduled reports' })
   @ApiResponse({ status: 200, description: 'Scheduled reports returned' })
-  async getSchedules() {
+  async getSchedules(): Promise<any> {
     return this.schedulerService.listSchedules();
   }
 
   @Post('distribute')
   @ApiOperation({ summary: 'Distribute a report immediately' })
   @ApiResponse({ status: 200, description: 'Report distribution triggered' })
-  async distributeReport(@Body() dto: DistributeReportDto) {
+  async distributeReport(@Body() dto: DistributeReportDto): Promise<any> {
     return this.schedulerService.distributeReport(
       dto.reportType,
       dto.recipients,
-      `Manual report distribution: ${dto.reportType}`,
+      `Manual report distribution: ${dto.reportType}`
     );
   }
 }

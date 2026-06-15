@@ -25,10 +25,7 @@ import { TransactionService } from './services/transaction.service';
         ...buildDatabaseTypeOrmOptions({
           NODE_ENV: configService.get<string>('NODE_ENV', 'development'),
           DB_LOGGING: configService.get<string>('DB_LOGGING', 'false'),
-          SLOW_QUERY_THRESHOLD_MS: configService.get<string>(
-            'SLOW_QUERY_THRESHOLD_MS',
-            '1000',
-          ),
+          SLOW_QUERY_THRESHOLD_MS: configService.get<string>('SLOW_QUERY_THRESHOLD_MS', '1000'),
         }),
       }),
     }),

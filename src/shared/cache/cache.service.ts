@@ -27,7 +27,7 @@ export class CacheService implements OnModuleInit {
 
   async onModuleInit() {
     const config = redisConfig(this.configService);
-    
+
     this.redis = new Redis({
       host: config.host,
       port: config.port,
@@ -57,11 +57,7 @@ export class CacheService implements OnModuleInit {
   /**
    * Set a value in cache
    */
-  async set<T>(
-    key: string,
-    value: T,
-    options: CacheOptions = {},
-  ): Promise<void> {
+  async set<T>(key: string, value: T, options: CacheOptions = {}): Promise<void> {
     try {
       const serializedValue = JSON.stringify(value);
       const ttl = options.ttl || this.configService.get<number>('CACHE_DEFAULT_TTL', 3600);
@@ -83,11 +79,7 @@ export class CacheService implements OnModuleInit {
    * Atomically set a value only if the key does not already exist (NX) with TTL (seconds).
    * Returns true if the key was set, false if it already existed.
    */
-  async setIfNotExists(
-    key: string,
-    value: any,
-    ttl: number,
-  ): Promise<boolean> {
+  async setIfNotExists(key: string, value: any, ttl: number): Promise<boolean> {
     try {
       const serializedValue = JSON.stringify(value);
       // Use Redis SET with NX and EX for atomic set-if-not-exists with expiry
@@ -108,7 +100,7 @@ export class CacheService implements OnModuleInit {
   async get<T>(key: string): Promise<T | null> {
     try {
       const value = await this.redis.get(key);
-      
+
       if (value === null) {
         this.missCount++;
         this.logger.debug(`Cache miss: ${key}`);
@@ -117,7 +109,7 @@ export class CacheService implements OnModuleInit {
 
       this.hitCount++;
       this.logger.debug(`Cache hit: ${key}`);
-      
+
       return JSON.parse(value) as T;
     } catch (error) {
       this.logger.error(`Failed to get cache key ${key}:`, error);
@@ -209,7 +201,7 @@ export class CacheService implements OnModuleInit {
    */
   async lpush(key: string, ...values: any[]): Promise<number> {
     try {
-      const serializedValues = values.map(v => JSON.stringify(v));
+      const serializedValues = values.map((v) => JSON.stringify(v));
       const result = await this.redis.lpush(key, ...serializedValues);
       this.logger.debug(`Cache lpush: ${key} (${values.length} items)`);
       return result;
@@ -225,7 +217,7 @@ export class CacheService implements OnModuleInit {
   async lrange<T>(key: string, start: number = 0, stop: number = -1): Promise<T[]> {
     try {
       const values = await this.redis.lrange(key, start, stop);
-      return values.map(v => JSON.parse(v)) as T[];
+      return values.map((v) => JSON.parse(v)) as T[];
     } catch (error) {
       this.logger.error(`Failed to lrange cache key ${key}:`, error);
       return [];
@@ -237,7 +229,7 @@ export class CacheService implements OnModuleInit {
    */
   async sadd(key: string, ...values: any[]): Promise<number> {
     try {
-      const serializedValues = values.map(v => JSON.stringify(v));
+      const serializedValues = values.map((v) => JSON.stringify(v));
       const result = await this.redis.sadd(key, ...serializedValues);
       this.logger.debug(`Cache sadd: ${key} (${values.length} items)`);
       return result;
@@ -253,7 +245,7 @@ export class CacheService implements OnModuleInit {
   async smembers<T>(key: string): Promise<T[]> {
     try {
       const values = await this.redis.smembers(key);
-      return values.map(v => JSON.parse(v)) as T[];
+      return values.map((v) => JSON.parse(v)) as T[];
     } catch (error) {
       this.logger.error(`Failed to smembers cache key ${key}:`, error);
       return [];
@@ -311,7 +303,7 @@ export class CacheService implements OnModuleInit {
     try {
       const info = await this.redis.info('memory');
       const keyCount = await this.redis.dbsize();
-      
+
       // Parse memory usage from Redis info
       const memoryMatch = info.match(/used_memory_human:(.+)/);
       const memory = memoryMatch ? memoryMatch[1].trim() : '0B';
@@ -341,11 +333,7 @@ export class CacheService implements OnModuleInit {
   /**
    * Cache wrapper function with automatic TTL
    */
-  async remember<T>(
-    key: string,
-    fetcher: () => Promise<T>,
-    ttl: number = 3600,
-  ): Promise<T> {
+  async remember<T>(key: string, fetcher: () => Promise<T>, ttl: number = 3600): Promise<T> {
     try {
       // Try to get from cache first
       const cached = await this.get<T>(key);
@@ -355,10 +343,10 @@ export class CacheService implements OnModuleInit {
 
       // If not in cache, fetch the data
       const data = await fetcher();
-      
+
       // Store in cache
       await this.set(key, data, { ttl });
-      
+
       return data;
     } catch (error) {
       this.logger.error(`Failed to remember cache key ${key}:`, error);
@@ -372,7 +360,7 @@ export class CacheService implements OnModuleInit {
   async rememberWithStaleFallback<T>(
     key: string,
     fetcher: () => Promise<T>,
-    ttl: number = 3600,
+    ttl: number = 3600
   ): Promise<T> {
     const cached = await this.get<T>(key);
     if (cached !== null) {
@@ -388,9 +376,7 @@ export class CacheService implements OnModuleInit {
       return data;
     } catch (error) {
       if (cached !== null) {
-        this.logger.warn(
-          `Fetcher failed for ${key}; returning stale cached value`,
-        );
+        this.logger.warn(`Fetcher failed for ${key}; returning stale cached value`);
         return cached;
       }
       this.logger.error(`Failed to remember cache key ${key}:`, error);
@@ -404,13 +390,13 @@ export class CacheService implements OnModuleInit {
   async mget<T>(keys: string[]): Promise<(T | null)[]> {
     try {
       const values = await this.redis.mget(...keys);
-      
+
       return values.map((value, index) => {
         if (value === null) {
           this.missCount++;
           return null;
         }
-        
+
         this.hitCount++;
         try {
           return JSON.parse(value) as T;
@@ -430,7 +416,7 @@ export class CacheService implements OnModuleInit {
   async mset(keyValuePairs: Record<string, any>, ttl?: number): Promise<void> {
     try {
       const serializedPairs: string[] = [];
-      
+
       for (const [key, value] of Object.entries(keyValuePairs)) {
         serializedPairs.push(key, JSON.stringify(value));
       }
@@ -460,7 +446,7 @@ export class CacheService implements OnModuleInit {
   async getOrComputeLeaderboard<T>(
     cacheKey: string,
     computeFn: () => Promise<T>,
-    ttl: number = 3600,
+    ttl: number = 3600
   ): Promise<T> {
     try {
       // Try to get from cache

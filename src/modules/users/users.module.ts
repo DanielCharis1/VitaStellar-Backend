@@ -25,13 +25,11 @@ import { Notification } from '../../notifications/entities/notification.entity';
 import { ReferralRecord } from '../../referral/entities/referral-record.entity';
 import { QueueService } from '../../shared/queue/queue.service';
 import { NotificationsModule } from '../../notifications/notifications.module';
+import { PreferencesService } from './services/preferences.service';
+import { StorageModule } from '../../shared/storage/storage.module';
 
 @Module({
-  controllers: [
-    UsersController,
-    SettingsController,
-    DataExportDownloadController,
-  ],
+  controllers: [UsersController, SettingsController, DataExportDownloadController],
   imports: [
     TypeOrmModule.forFeature([
       User,
@@ -50,6 +48,7 @@ import { NotificationsModule } from '../../notifications/notifications.module';
     }),
     QueueModule,
     NotificationsModule,
+    StorageModule,
   ],
   exports: [
     UsersService,
@@ -69,6 +68,7 @@ import { NotificationsModule } from '../../notifications/notifications.module';
     DataExportService,
     DataExportProcessor,
     QueueService,
+    PreferencesService,
   ],
 })
 export class UsersModule {}

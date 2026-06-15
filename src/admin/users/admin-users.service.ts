@@ -8,7 +8,7 @@ import { ListUsersDto } from '../dto/list-users.dto';
 export class AdminUsersService {
   constructor(
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    private readonly userRepository: Repository<User>
   ) {}
 
   async listUsers(dto: ListUsersDto) {

@@ -21,12 +21,12 @@ export class CreateHealerAvailabilityTable1790000000000 implements MigrationInte
           { name: 'created_at', type: 'timestamptz', default: 'now()' },
         ],
       }),
-      true,
+      true
     );
 
     await queryRunner.createIndex(
       'healer_availability',
-      new TableIndex({ name: 'IDX_HEALER_AVAILABILITY_HEALER', columnNames: ['healer_id'] }),
+      new TableIndex({ name: 'IDX_HEALER_AVAILABILITY_HEALER', columnNames: ['healer_id'] })
     );
   }
 

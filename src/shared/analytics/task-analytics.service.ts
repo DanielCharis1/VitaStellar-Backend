@@ -1,10 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
-import {
-  TaskCompletion,
-  TaskCompletionStatus,
-} from '../../tasks/entities/task-completion.entity';
+import { TaskCompletion, TaskCompletionStatus } from '../../tasks/entities/task-completion.entity';
 import { HealthTask, TaskCategory } from '../../tasks/entities/health-task.entity';
 
 export type AnalyticsPeriod = 'daily' | 'weekly' | 'monthly' | 'custom';
@@ -41,7 +38,7 @@ export class TaskAnalyticsService {
     @InjectRepository(TaskCompletion)
     private readonly completionRepo: Repository<TaskCompletion>,
     @InjectRepository(HealthTask)
-    private readonly taskRepo: Repository<HealthTask>,
+    private readonly taskRepo: Repository<HealthTask>
   ) {}
 
   calculateCompletionRate(completed: number, attempted: number): number {
@@ -58,7 +55,8 @@ export class TaskAnalyticsService {
       startDate = options.startDate;
     } else {
       const period = options.period || 'weekly';
-      const daysBack = period === 'daily' ? 1 : period === 'weekly' ? 7 : period === 'monthly' ? 30 : 7;
+      const daysBack =
+        period === 'daily' ? 1 : period === 'weekly' ? 7 : period === 'monthly' ? 30 : 7;
       startDate = new Date(now.getTime() - daysBack * 24 * 60 * 60 * 1000);
     }
 
@@ -119,7 +117,7 @@ export class TaskAnalyticsService {
   async getCategoryBreakdown(
     startDate: Date,
     endDate: Date,
-    userId?: string,
+    userId?: string
   ): Promise<CategoryBreakdown[]> {
     const qb = this.completionRepo
       .createQueryBuilder('completion')
@@ -128,7 +126,7 @@ export class TaskAnalyticsService {
       .addSelect('COUNT(completion.id)', 'totalAttempted')
       .addSelect(
         `SUM(CASE WHEN completion.status = '${TaskCompletionStatus.VERIFIED}' THEN 1 ELSE 0 END)`,
-        'totalCompleted',
+        'totalCompleted'
       )
       .where('completion.createdAt BETWEEN :startDate AND :endDate', {
         startDate,
@@ -148,7 +146,7 @@ export class TaskAnalyticsService {
       totalCompleted: Number(row.totalCompleted),
       completionRate: this.calculateCompletionRate(
         Number(row.totalCompleted),
-        Number(row.totalAttempted),
+        Number(row.totalAttempted)
       ),
     }));
   }

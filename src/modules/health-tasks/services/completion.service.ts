@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between, MoreThanOrEqual } from 'typeorm';
@@ -39,13 +35,10 @@ export class CompletionService {
     private readonly taskRepo: Repository<HealthTask>,
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
-    private readonly eventEmitter: EventEmitter2,
+    private readonly eventEmitter: EventEmitter2
   ) {}
 
-  async markTaskComplete(
-    userId: string,
-    dto: MarkCompleteDto,
-  ): Promise<TaskCompletion> {
+  async markTaskComplete(userId: string, dto: MarkCompleteDto): Promise<TaskCompletion> {
     const { taskId, completionPercentage = 100, notes } = dto;
 
     // Validate task exists
@@ -90,10 +83,7 @@ export class CompletionService {
     return saved;
   }
 
-  async markTaskIncomplete(
-    userId: string,
-    dto: MarkIncompleteDto,
-  ): Promise<TaskCompletion> {
+  async markTaskIncomplete(userId: string, dto: MarkIncompleteDto): Promise<TaskCompletion> {
     const { taskId, notes } = dto;
 
     // Validate task exists
@@ -121,10 +111,7 @@ export class CompletionService {
     return await this.completionRepo.save(completion);
   }
 
-  async getCompletionHistory(
-    userId: string,
-    taskId: string,
-  ): Promise<TaskCompletion[]> {
+  async getCompletionHistory(userId: string, taskId: string): Promise<TaskCompletion[]> {
     return await this.completionRepo.find({
       where: { userId, taskId },
       order: { createdAt: 'DESC' },
@@ -149,7 +136,7 @@ export class CompletionService {
       order: { createdAt: 'ASC' },
     });
 
-    const completedTasks = completions.filter(c => c.isCompleted).length;
+    const completedTasks = completions.filter((c) => c.isCompleted).length;
     const completionRate = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
 
     // Calculate streaks
@@ -157,15 +144,16 @@ export class CompletionService {
 
     // Calculate average completion time (simplified - days between creation and completion)
     const completionTimes = completions
-      .filter(c => c.isCompleted && c.completedAt)
-      .map(c => {
+      .filter((c) => c.isCompleted && c.completedAt)
+      .map((c) => {
         // This is simplified - in reality, we'd need task creation date
         return 1; // placeholder
       });
 
-    const averageCompletionTime = completionTimes.length > 0
-      ? completionTimes.reduce((a, b) => a + b, 0) / completionTimes.length
-      : 0;
+    const averageCompletionTime =
+      completionTimes.length > 0
+        ? completionTimes.reduce((a, b) => a + b, 0) / completionTimes.length
+        : 0;
 
     return {
       totalTasks,
@@ -177,12 +165,15 @@ export class CompletionService {
     };
   }
 
-  private calculateStreaks(completions: TaskCompletion[]): { currentStreak: number; longestStreak: number } {
+  private calculateStreaks(completions: TaskCompletion[]): {
+    currentStreak: number;
+    longestStreak: number;
+  } {
     if (completions.length === 0) return { currentStreak: 0, longestStreak: 0 };
 
     // Group by date
     const dailyCompletions = new Map<string, boolean>();
-    completions.forEach(c => {
+    completions.forEach((c) => {
       if (c.isCompleted && c.completedAt) {
         const date = c.completedAt.toISOString().split('T')[0];
         dailyCompletions.set(date, true);
@@ -199,7 +190,7 @@ export class CompletionService {
       const currentDate = new Date(dates[i]);
       const prevDate = i > 0 ? new Date(dates[i - 1]) : null;
 
-      if (!prevDate || (currentDate.getTime() - prevDate.getTime()) === 24 * 60 * 60 * 1000) {
+      if (!prevDate || currentDate.getTime() - prevDate.getTime() === 24 * 60 * 60 * 1000) {
         tempStreak++;
       } else {
         longestStreak = Math.max(longestStreak, tempStreak);
@@ -233,12 +224,13 @@ export class CompletionService {
     });
 
     const totalAttempts = completions.length;
-    const totalCompletions = completions.filter(c => c.isCompleted).length;
+    const totalCompletions = completions.filter((c) => c.isCompleted).length;
     const completionRate = totalAttempts > 0 ? (totalCompletions / totalAttempts) * 100 : 0;
 
-    const averageCompletionPercentage = totalAttempts > 0
-      ? completions.reduce((sum, c) => sum + c.completionPercentage, 0) / totalAttempts
-      : 0;
+    const averageCompletionPercentage =
+      totalAttempts > 0
+        ? completions.reduce((sum, c) => sum + c.completionPercentage, 0) / totalAttempts
+        : 0;
 
     return {
       totalAttempts,

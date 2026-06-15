@@ -55,7 +55,7 @@ export class CreateTaskCategories1771889592955 implements MigrationInterface {
           },
         ],
       }),
-      true,
+      true
     );
   }
 

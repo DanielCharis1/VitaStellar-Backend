@@ -1,9 +1,4 @@
-import {
-  MigrationInterface,
-  QueryRunner,
-  Table,
-  TableForeignKey,
-} from 'typeorm';
+import { MigrationInterface, QueryRunner, Table, TableForeignKey } from 'typeorm';
 
 export class CreateCouponsTable1739990402000 implements MigrationInterface {
   name = 'CreateCouponsTable1739990402000';
@@ -54,7 +49,7 @@ export class CreateCouponsTable1739990402000 implements MigrationInterface {
           },
         ],
       }),
-      true,
+      true
     );
 
     // Add foreign key to users table
@@ -66,7 +61,7 @@ export class CreateCouponsTable1739990402000 implements MigrationInterface {
         referencedTableName: 'users',
         referencedColumnNames: ['id'],
         onDelete: 'CASCADE',
-      }),
+      })
     );
   }
 

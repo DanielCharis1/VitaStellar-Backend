@@ -30,7 +30,7 @@ export class NotificationService {
     private readonly userRepository: Repository<User>,
     private readonly pushNotificationService: PushNotificationService,
     private readonly cacheService: CacheService,
-    private readonly configService: ConfigService,
+    private readonly configService: ConfigService
   ) {
     // Initialize cooldowns from config or use sensible defaults (seconds)
     this.cooldowns = {
@@ -57,7 +57,7 @@ export class NotificationService {
   async markAllAsRead(userId: string): Promise<{ updated: number }> {
     const result = await this.notificationRepository.update(
       { userId, isRead: false },
-      { isRead: true },
+      { isRead: true }
     );
     return { updated: result.affected ?? 0 };
   }
@@ -78,10 +78,7 @@ export class NotificationService {
   /**
    * Check if a user wants to receive notifications via a specific channel
    */
-  async canSendNotification(
-    userId: string,
-    channel: 'email' | 'sms' | 'push',
-  ): Promise<boolean> {
+  async canSendNotification(userId: string, channel: 'email' | 'sms' | 'push'): Promise<boolean> {
     const preferences = await this.preferenceRepository.findOne({
       where: { userId },
     });
@@ -106,17 +103,11 @@ export class NotificationService {
   /**
    * Send an email notification if the user has enabled email notifications
    */
-  async sendEmail(
-    userId: string,
-    template: string,
-    data: any,
-  ): Promise<boolean> {
+  async sendEmail(userId: string, template: string, data: any): Promise<boolean> {
     const canSend = await this.canSendNotification(userId, 'email');
 
     if (!canSend) {
-      this.logger.debug(
-        `Email notifications disabled for user ${userId}. Skipping.`,
-      );
+      this.logger.debug(`Email notifications disabled for user ${userId}. Skipping.`);
       return false;
     }
 
@@ -126,16 +117,12 @@ export class NotificationService {
     const allowed = await this.cacheService.setIfNotExists(dedupeKey, '1', cooldown);
 
     if (!allowed) {
-      this.logger.debug(
-        `Duplicate email suppressed for user ${userId} within ${cooldown}s`,
-      );
+      this.logger.debug(`Duplicate email suppressed for user ${userId} within ${cooldown}s`);
       return false;
     }
 
     // Emit event for email sending to be handled by a dedicated processor
-    this.logger.log(
-      `Sending email to user ${userId} with template: ${template}`,
-    );
+    this.logger.log(`Sending email to user ${userId} with template: ${template}`);
 
     return true;
   }
@@ -147,9 +134,7 @@ export class NotificationService {
     const canSend = await this.canSendNotification(userId, 'sms');
 
     if (!canSend) {
-      this.logger.debug(
-        `SMS notifications disabled for user ${userId}. Skipping.`,
-      );
+      this.logger.debug(`SMS notifications disabled for user ${userId}. Skipping.`);
       return false;
     }
 
@@ -158,9 +143,7 @@ export class NotificationService {
     const allowed = await this.cacheService.setIfNotExists(dedupeKey, '1', cooldown);
 
     if (!allowed) {
-      this.logger.debug(
-        `Duplicate SMS suppressed for user ${userId} within ${cooldown}s`,
-      );
+      this.logger.debug(`Duplicate SMS suppressed for user ${userId} within ${cooldown}s`);
       return false;
     }
 
@@ -173,17 +156,11 @@ export class NotificationService {
   /**
    * Send a push notification if the user has enabled push notifications
    */
-  async sendPush(
-    userId: string,
-    title: string,
-    body: string,
-  ): Promise<boolean> {
+  async sendPush(userId: string, title: string, body: string): Promise<boolean> {
     const canSend = await this.canSendNotification(userId, 'push');
 
     if (!canSend) {
-      this.logger.debug(
-        `Push notifications disabled for user ${userId}. Skipping.`,
-      );
+      this.logger.debug(`Push notifications disabled for user ${userId}. Skipping.`);
       return false;
     }
 
@@ -192,15 +169,11 @@ export class NotificationService {
     const allowed = await this.cacheService.setIfNotExists(dedupeKey, '1', cooldown);
 
     if (!allowed) {
-      this.logger.debug(
-        `Duplicate push suppressed for user ${userId} within ${cooldown}s`,
-      );
+      this.logger.debug(`Duplicate push suppressed for user ${userId} within ${cooldown}s`);
       return false;
     }
 
-    this.logger.log(
-      `Sending push notification to user ${userId}: ${title} - ${body}`,
-    );
+    this.logger.log(`Sending push notification to user ${userId}: ${title} - ${body}`);
 
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
@@ -216,7 +189,7 @@ export class NotificationService {
     const success = await this.pushNotificationService.sendPushNotification(
       user.fcmToken,
       title,
-      body,
+      body
     );
 
     await this.createNotification({
@@ -238,16 +211,12 @@ export class NotificationService {
       email?: { template: string; data: any };
       sms?: { message: string };
       push?: { title: string; body: string };
-    },
+    }
   ): Promise<{ email?: boolean; sms?: boolean; push?: boolean }> {
     const results: { email?: boolean; sms?: boolean; push?: boolean } = {};
 
     if (options.email) {
-      results.email = await this.sendEmail(
-        userId,
-        options.email.template,
-        options.email.data,
-      );
+      results.email = await this.sendEmail(userId, options.email.template, options.email.data);
     }
 
     if (options.sms) {
@@ -255,11 +224,7 @@ export class NotificationService {
     }
 
     if (options.push) {
-      results.push = await this.sendPush(
-        userId,
-        options.push.title,
-        options.push.body,
-      );
+      results.push = await this.sendPush(userId, options.push.title, options.push.body);
     }
 
     return results;
@@ -268,9 +233,7 @@ export class NotificationService {
   /**
    * Get user's notification preferences
    */
-  async getUserPreferences(
-    userId: string,
-  ): Promise<NotificationPreference | null> {
+  async getUserPreferences(userId: string): Promise<NotificationPreference | null> {
     return this.preferenceRepository.findOne({ where: { userId } });
   }
 }

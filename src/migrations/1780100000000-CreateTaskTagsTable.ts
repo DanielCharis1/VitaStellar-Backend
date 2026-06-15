@@ -52,7 +52,7 @@ export class CreateTaskTagsTable1780100000000 implements MigrationInterface {
           },
         ],
       }),
-      true,
+      true
     );
 
     // Create index on userId
@@ -61,7 +61,7 @@ export class CreateTaskTagsTable1780100000000 implements MigrationInterface {
       new TableIndex({
         name: 'IDX_task_tags_userId',
         columnNames: ['userId'],
-      }),
+      })
     );
 
     // Create foreign key for userId
@@ -72,7 +72,7 @@ export class CreateTaskTagsTable1780100000000 implements MigrationInterface {
         referencedColumnNames: ['id'],
         referencedTableName: 'users',
         onDelete: 'CASCADE',
-      }),
+      })
     );
 
     // Create junction table health_task_tags
@@ -92,7 +92,7 @@ export class CreateTaskTagsTable1780100000000 implements MigrationInterface {
           },
         ],
       }),
-      true,
+      true
     );
 
     // Create foreign key for healthTaskId
@@ -103,7 +103,7 @@ export class CreateTaskTagsTable1780100000000 implements MigrationInterface {
         referencedColumnNames: ['id'],
         referencedTableName: 'health_tasks',
         onDelete: 'CASCADE',
-      }),
+      })
     );
 
     // Create foreign key for tagId
@@ -114,7 +114,7 @@ export class CreateTaskTagsTable1780100000000 implements MigrationInterface {
         referencedColumnNames: ['id'],
         referencedTableName: 'task_tags',
         onDelete: 'CASCADE',
-      }),
+      })
     );
   }
 

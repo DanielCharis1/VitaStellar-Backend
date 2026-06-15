@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  InternalServerErrorException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import twilio, { Twilio } from 'twilio';
 
@@ -16,7 +12,7 @@ export class SmsService {
   async sendVerificationCode(phoneNumber: string, code: string): Promise<void> {
     await this.sendSms(
       phoneNumber,
-      `Your VitaStellar verification code is ${code}. It expires in 10 minutes.`,
+      `Your VitaStellar verification code is ${code}. It expires in 10 minutes.`
     );
   }
 
@@ -33,11 +29,8 @@ export class SmsService {
 
       this.logger.log(`SMS sent to ${phoneNumber} via Twilio: ${result.sid}`);
     } catch (error) {
-      const messageText =
-        error instanceof Error ? error.message : 'Unknown Twilio error';
-      this.logger.error(
-        `Failed to send SMS to ${phoneNumber} via Twilio: ${messageText}`,
-      );
+      const messageText = error instanceof Error ? error.message : 'Unknown Twilio error';
+      this.logger.error(`Failed to send SMS to ${phoneNumber} via Twilio: ${messageText}`);
       throw new InternalServerErrorException('Failed to send SMS');
     }
   }
@@ -51,9 +44,7 @@ export class SmsService {
     const authToken = this.configService.get<string>('TWILIO_AUTH_TOKEN');
 
     if (!accountSid || !authToken) {
-      throw new InternalServerErrorException(
-        'Twilio SMS is not configured',
-      );
+      throw new InternalServerErrorException('Twilio SMS is not configured');
     }
 
     this.twilioClient = twilio(accountSid, authToken);
@@ -65,9 +56,7 @@ export class SmsService {
     const from = this.configService.get<string>('TWILIO_PHONE_NUMBER');
 
     if (!from) {
-      throw new InternalServerErrorException(
-        'Twilio phone number is not configured',
-      );
+      throw new InternalServerErrorException('Twilio phone number is not configured');
     }
 
     return from;

@@ -48,20 +48,18 @@ export interface ValidatedEnv {
   STELLAR_TREASURY_SECRET_KEY: string;
 }
 
-export function validateEnv (): ValidatedEnv {
+export function validateEnv(): ValidatedEnv {
   const result = envValidationSchema.validate(process.env, {
     stripUnknown: false,
     convert: true,
   });
 
   if (result.error) {
-    const missingVar = result.error.details
-      .map((d) => d.message)
-      .join('; ');
+    const missingVar = result.error.details.map((d) => d.message).join('; ');
     throw new Error(
       `Environment validation failed: ${missingVar}\n` +
-      `Missing or invalid environment variables detected. ` +
-      `Please set all required variables in your .env file.`,
+        `Missing or invalid environment variables detected. ` +
+        `Please set all required variables in your .env file.`
     );
   }
 

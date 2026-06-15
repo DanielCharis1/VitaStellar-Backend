@@ -33,7 +33,10 @@ export class Session {
   @Column({ type: 'varchar', length: 45, nullable: true })
   @IsOptional()
   @IsString()
-  @Matches(/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/, { message: 'Invalid IP address format' })
+  @Matches(
+    /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/,
+    { message: 'Invalid IP address format' }
+  )
   ip?: string;
 
   @Column({ type: 'varchar', length: 500, nullable: true })

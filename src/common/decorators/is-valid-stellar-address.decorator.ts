@@ -13,9 +13,7 @@ import {
 const STELLAR_ADDRESS_REGEX = /^G[A-Z2-7]{55}$/;
 
 @ValidatorConstraint({ name: 'isValidStellarAddress', async: false })
-export class IsValidStellarAddressConstraint
-  implements ValidatorConstraintInterface
-{
+export class IsValidStellarAddressConstraint implements ValidatorConstraintInterface {
   validate(value: any, _args: ValidationArguments): boolean {
     if (typeof value !== 'string') return false;
     return STELLAR_ADDRESS_REGEX.test(value);

@@ -6,10 +6,7 @@ import { Cache } from 'cache-manager';
 import Redis from 'ioredis';
 import { RewardTransaction } from '../rewards/entities/reward-transaction.entity';
 import { RewardStatus } from '../rewards/enums/reward-status.enum';
-import {
-  LeaderboardResponseDto,
-  LeaderboardEntryDto,
-} from './dto/leaderboard.dto';
+import { LeaderboardResponseDto, LeaderboardEntryDto } from './dto/leaderboard.dto';
 import {
   LeaderboardPeriod,
   DEFAULT_LEADERBOARD_PERIOD,
@@ -34,7 +31,7 @@ export class LeaderboardService {
   constructor(
     @InjectRepository(RewardTransaction)
     private readonly rewardRepo: Repository<RewardTransaction>,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache
   ) {
     this.redis = (this.cacheManager.stores as any).client;
   }
@@ -47,18 +44,14 @@ export class LeaderboardService {
     return `${firstName} ${lastName.charAt(0)}.`;
   }
 
-  rankLeaderboardRows(
-    rows: LeaderboardCalculationRow[],
-  ): LeaderboardCalculationRow[] {
+  rankLeaderboardRows(rows: LeaderboardCalculationRow[]): LeaderboardCalculationRow[] {
     return [...rows].sort((left, right) => {
       if (right.totalXlm !== left.totalXlm) {
         return right.totalXlm - left.totalXlm;
       }
 
-      const leftTimestamp =
-        left.firstTaskCompletedAt?.getTime() ?? Number.MAX_SAFE_INTEGER;
-      const rightTimestamp =
-        right.firstTaskCompletedAt?.getTime() ?? Number.MAX_SAFE_INTEGER;
+      const leftTimestamp = left.firstTaskCompletedAt?.getTime() ?? Number.MAX_SAFE_INTEGER;
+      const rightTimestamp = right.firstTaskCompletedAt?.getTime() ?? Number.MAX_SAFE_INTEGER;
 
       if (leftTimestamp !== rightTimestamp) {
         return leftTimestamp - rightTimestamp;
@@ -70,7 +63,7 @@ export class LeaderboardService {
 
   filterLeaderboardRowsByCategory(
     rows: LeaderboardCalculationRow[],
-    category?: string,
+    category?: string
   ): LeaderboardCalculationRow[] {
     if (!category) {
       return [...rows];
@@ -82,7 +75,7 @@ export class LeaderboardService {
   paginateLeaderboardRows(
     rows: LeaderboardCalculationRow[],
     page: number = 1,
-    limit: number = 50,
+    limit: number = 50
   ): LeaderboardCalculationRow[] {
     if (page < 1 || limit < 1) {
       return [];
@@ -100,14 +93,9 @@ export class LeaderboardService {
       countryCode?: string;
       page?: number;
       limit?: number;
-    },
+    }
   ): LeaderboardResponseDto {
-    const {
-      category,
-      countryCode,
-      page = 1,
-      limit = 50,
-    } = options ?? {};
+    const { category, countryCode, page = 1, limit = 50 } = options ?? {};
 
     const filteredRows = this.filterLeaderboardRowsByCategory(rows, category);
     const rankedRows = this.rankLeaderboardRows(filteredRows);
@@ -136,7 +124,7 @@ export class LeaderboardService {
     limit: number = 50,
     countryCode?: string,
     page: number = 1,
-    period: LeaderboardPeriod = DEFAULT_LEADERBOARD_PERIOD,
+    period: LeaderboardPeriod = DEFAULT_LEADERBOARD_PERIOD
   ): Promise<LeaderboardResponseDto> {
     const setKey = buildLeaderboardSetKey(period, countryCode);
     const namesKey = `leaderboard:metadata:names`;
@@ -144,12 +132,7 @@ export class LeaderboardService {
     const endIndex = startIndex + limit - 1;
 
     // Get Top N IDs and Scores from the Sorted Set
-    const rawTopUsers = await this.redis.zrevrange(
-      setKey,
-      startIndex,
-      endIndex,
-      'WITHSCORES',
-    );
+    const rawTopUsers = await this.redis.zrevrange(setKey, startIndex, endIndex, 'WITHSCORES');
 
     // Extract IDs to fetch names from our Hash in one go
     const userIds: string[] = [];
@@ -158,8 +141,7 @@ export class LeaderboardService {
     }
 
     // Fetch names from Redis Hash (HMGET returns an array of values)
-    const displayNames =
-      userIds.length > 0 ? await this.redis.hmget(namesKey, ...userIds) : [];
+    const displayNames = userIds.length > 0 ? await this.redis.hmget(namesKey, ...userIds) : [];
 
     // Get Requesting User's Rank and Score
     const [userRank, userScore] = await Promise.all([
@@ -228,10 +210,7 @@ export class LeaderboardService {
       for (const row of data) {
         const score = parseFloat(row.totalXlm);
         const truncatedName = this.formatDisplayName(row.fullName);
-        const countryKey = buildLeaderboardSetKey(
-          period,
-          row.country?.toUpperCase(),
-        );
+        const countryKey = buildLeaderboardSetKey(period, row.country?.toUpperCase());
 
         pipeline.zadd(globalKey, score, row.userId);
         pipeline.zadd(countryKey, score, row.userId);
@@ -245,7 +224,7 @@ export class LeaderboardService {
 
     await pipeline.exec();
     this.logger.log(
-      `Leaderboard rebuild complete. Processed up to ${totalUsersProcessed} users per period.`,
+      `Leaderboard rebuild complete. Processed up to ${totalUsersProcessed} users per period.`
     );
   }
 }

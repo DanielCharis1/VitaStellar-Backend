@@ -9,13 +9,17 @@ export class PushService {
 
   constructor(
     @InjectRepository(PushSubscription)
-    private readonly pushSubscriptionRepo: Repository<PushSubscription>,
+    private readonly pushSubscriptionRepo: Repository<PushSubscription>
   ) {}
 
   /**
    * Registers or updates a device token for a user.
    */
-  async subscribe(userId: string, deviceToken: string, platform: PushPlatform): Promise<PushSubscription> {
+  async subscribe(
+    userId: string,
+    deviceToken: string,
+    platform: PushPlatform
+  ): Promise<PushSubscription> {
     let subscription = await this.pushSubscriptionRepo.findOne({
       where: { deviceToken },
     });
@@ -62,7 +66,7 @@ export class PushService {
       return;
     }
 
-    const promises = activeSubscriptions.map(sub => 
+    const promises = activeSubscriptions.map((sub) =>
       this.sendPush(sub.deviceToken, sub.platform, title, body, data)
     );
 
@@ -73,25 +77,25 @@ export class PushService {
    * Internal method to interact with push providers (e.g. FCM, APNs)
    */
   private async sendPush(
-    token: string, 
-    platform: PushPlatform, 
-    title: string, 
-    body: string, 
+    token: string,
+    platform: PushPlatform,
+    title: string,
+    body: string,
     data: any
   ): Promise<void> {
     this.logger.log(`Sending push to ${platform} device: ${token} - ${title}`);
-    
+
     try {
       // Logic for FCM / APNs integration would go here.
       // For now, we mock the success.
-      
+
       // Example for FCM (pseudo-code):
       // await this.fcmProvider.send({ token, notification: { title, body }, data });
-      
+
       this.logger.log(`Push successfully delivered to ${token}`);
     } catch (error: any) {
       this.logger.error(`Failed to send push to ${token}: ${error.message}`);
-      
+
       // If token is invalid/expired, mark subscription as inactive
       if (error.code === 'messaging/registration-token-not-registered') {
         await this.unsubscribe(token);

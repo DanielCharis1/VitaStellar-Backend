@@ -27,9 +27,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     // Determine status code
     const statusCode =
-      exception instanceof HttpException
-        ? exception.getStatus()
-        : HttpStatus.INTERNAL_SERVER_ERROR;
+      exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
 
     // Get error message
     let message: string | string[] = 'Internal server error';
@@ -39,10 +37,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       const exceptionResponse = exception.getResponse();
       if (typeof exceptionResponse === 'string') {
         message = exceptionResponse;
-      } else if (
-        typeof exceptionResponse === 'object' &&
-        exceptionResponse !== null
-      ) {
+      } else if (typeof exceptionResponse === 'object' && exceptionResponse !== null) {
         const responseObj = exceptionResponse as Record<string, unknown>;
         message = (responseObj.message as string | string[]) || message;
         error = (responseObj.error as string) || error;
@@ -65,13 +60,11 @@ export class HttpExceptionFilter implements ExceptionFilter {
     if (statusCode >= 500) {
       this.logger.error(
         `500 Internal Server Error: ${Array.isArray(message) ? message.join(', ') : message}`,
-        exception instanceof Error
-          ? exception.stack
-          : 'No stack trace available',
+        exception instanceof Error ? exception.stack : 'No stack trace available'
       );
     } else {
       this.logger.warn(
-        `HTTP ${statusCode}: ${Array.isArray(message) ? message.join(', ') : message}`,
+        `HTTP ${statusCode}: ${Array.isArray(message) ? message.join(', ') : message}`
       );
     }
 

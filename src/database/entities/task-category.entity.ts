@@ -91,7 +91,10 @@ export class TaskCategory {
   deletedAt?: Date;
 
   // Static method to get predefined categories
-  static getPredefinedCategories(): Omit<TaskCategory, 'id' | 'createdAt' | 'updatedAt' | 'userId' | 'user'>[] {
+  static getPredefinedCategories(): Omit<
+    TaskCategory,
+    'id' | 'createdAt' | 'updatedAt' | 'userId' | 'user'
+  >[] {
     return [
       {
         name: 'Nutrition',

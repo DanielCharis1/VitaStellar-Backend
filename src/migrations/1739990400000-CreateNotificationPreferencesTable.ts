@@ -1,13 +1,6 @@
-import {
-  MigrationInterface,
-  QueryRunner,
-  Table,
-  TableForeignKey,
-} from 'typeorm';
+import { MigrationInterface, QueryRunner, Table, TableForeignKey } from 'typeorm';
 
-export class CreateNotificationPreferencesTable1739990400000
-  implements MigrationInterface
-{
+export class CreateNotificationPreferencesTable1739990400000 implements MigrationInterface {
   name = 'CreateNotificationPreferencesTable1739990400000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -73,7 +66,7 @@ export class CreateNotificationPreferencesTable1739990400000
           },
         ],
       }),
-      true,
+      true
     );
 
     // Add foreign key to users table
@@ -85,7 +78,7 @@ export class CreateNotificationPreferencesTable1739990400000
         referencedTableName: 'users',
         referencedColumnNames: ['id'],
         onDelete: 'CASCADE',
-      }),
+      })
     );
   }
 
@@ -93,7 +86,7 @@ export class CreateNotificationPreferencesTable1739990400000
     // Drop foreign key first
     await queryRunner.dropForeignKey(
       'notification_preferences',
-      'fk_notification_preferences_user',
+      'fk_notification_preferences_user'
     );
 
     // Drop the table

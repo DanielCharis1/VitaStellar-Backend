@@ -9,10 +9,7 @@ import { ReferralRecord } from '../../../referral/entities/referral-record.entit
 import { StorageService } from '../../../shared/storage/storage.service';
 import { NotificationService } from '../../../notifications/services/notification.service';
 import { QueueService } from '../../../shared/queue/queue.service';
-import {
-  DATA_PROCESSING_QUEUE,
-  USER_DATA_EXPORT_JOB,
-} from '../../../queue/queue.constants';
+import { DATA_PROCESSING_QUEUE, USER_DATA_EXPORT_JOB } from '../../../queue/queue.constants';
 
 export interface DataExportJobPayload {
   userId: string;
@@ -36,7 +33,7 @@ export class DataExportService {
     private readonly referralRepo: Repository<ReferralRecord>,
     private readonly storageService: StorageService,
     private readonly notificationService: NotificationService,
-    private readonly queueService: QueueService,
+    private readonly queueService: QueueService
   ) {}
 
   async queueExport(userId: string): Promise<{ jobId: string; status: string }> {
@@ -48,7 +45,7 @@ export class DataExportService {
     const job = await this.queueService.addJob<DataExportJobPayload>(
       DATA_PROCESSING_QUEUE,
       USER_DATA_EXPORT_JOB,
-      { userId, email: user.email ?? undefined },
+      { userId, email: user.email ?? undefined }
     );
 
     return {
@@ -109,14 +106,9 @@ export class DataExportService {
       },
     };
 
-    const { downloadToken } = await this.storageService.saveDataExport(
-      userId,
-      exportPayload,
-    );
+    const { downloadToken } = await this.storageService.saveDataExport(userId, exportPayload);
 
-    const downloadUrl = this.storageService.buildDataExportDownloadUrl(
-      downloadToken,
-    );
+    const downloadUrl = this.storageService.buildDataExportDownloadUrl(downloadToken);
 
     await this.notificationService.sendEmail(userId, 'data-export-ready', {
       downloadUrl,
@@ -131,8 +123,7 @@ export class DataExportService {
     userId: string;
     exportId: string;
   }> {
-    const resolved =
-      await this.storageService.resolveDataExportDownload(downloadToken);
+    const resolved = await this.storageService.resolveDataExportDownload(downloadToken);
     if (!resolved) {
       throw new NotFoundException('Export link is invalid or expired');
     }

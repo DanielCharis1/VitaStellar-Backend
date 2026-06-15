@@ -37,23 +37,19 @@ export class RewardProcessor {
     private readonly rewardService: RewardService,
     private readonly eventEmitter: EventEmitter2,
     @InjectQueue(REWARD_QUEUE) private readonly rewardQueue: Queue,
-    @InjectQueue(REWARD_DEAD_LETTER_QUEUE) private readonly dlq: Queue<DeadLetterJobData>,
+    @InjectQueue(REWARD_DEAD_LETTER_QUEUE) private readonly dlq: Queue<DeadLetterJobData>
   ) {}
 
   @Process({ name: REWARD_DISTRIBUTION_JOB, concurrency: 5 })
   async handleRewardDistribution(job: Job<RewardJobData>) {
-    this.logger.log(
-      `Processing job ${job.id} for completion ${job.data.completionId}`,
-    );
+    this.logger.log(`Processing job ${job.id} for completion ${job.data.completionId}`);
     const { completionId, userId, xlmAmount } = job.data;
     await this.rewardService.processRewardJob(completionId, userId, xlmAmount);
   }
 
   @OnQueueFailed()
   async onFailed(job: Job<RewardJobData>, error: Error) {
-    this.logger.error(
-      `Job ${job.id} failed: ${error.message}. Attempts made: ${job.attemptsMade}`,
-    );
+    this.logger.error(`Job ${job.id} failed: ${error.message}. Attempts made: ${job.attemptsMade}`);
 
     // If we've reached max attempts limit, move to dead letter queue
     if (job.attemptsMade >= (job.opts.attempts || 3)) {
@@ -68,7 +64,7 @@ export class RewardProcessor {
         jobId: job.id?.toString(),
         attemptsMade: job.attemptsMade,
         jobType: REWARD_DISTRIBUTION_JOB,
-       
+
         jobData: job.data as unknown as Record<string, unknown>,
       });
 
@@ -80,7 +76,7 @@ export class RewardProcessor {
       });
 
       this.logger.warn(
-        `Job ${job.id} moved to dead letter queue after ${job.attemptsMade} attempts`,
+        `Job ${job.id} moved to dead letter queue after ${job.attemptsMade} attempts`
       );
     }
   }

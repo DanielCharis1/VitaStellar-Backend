@@ -24,7 +24,8 @@ export class BadgeController {
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getAllBadges(): Promise<BadgeListResponseDto> {
-    return this.badgeService.getAllBadges();
+    const badges = await this.badgeService.getAllBadges();
+    return { badges: badges as any, totalBadges: badges.length };
   }
 
   @Get('user/:userId')
@@ -46,7 +47,8 @@ export class BadgeController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'User not found' })
   async getUserBadges(@Param('userId') userId: string): Promise<UserBadgesResponseDto> {
-    return this.badgeService.getUserBadges(userId);
+    const badges = await this.badgeService.getUserBadges(userId);
+    return { userId, badges: badges as any, totalBadges: badges.length };
   }
 
   @Get('me')
@@ -65,6 +67,7 @@ export class BadgeController {
     @Request() req: { user: { sub: string; id?: string } }
   ): Promise<UserBadgesResponseDto> {
     const userId = req.user.sub ?? req.user.id;
-    return this.badgeService.getUserBadges(userId);
+    const badges = await this.badgeService.getUserBadges(userId);
+    return { userId, badges: badges as any, totalBadges: badges.length };
   }
 }

@@ -15,20 +15,16 @@ const SPECIAL_CHAR_PATTERN = /[^\da-zA-Z]/;
 
 export function validatePasswordStrength(
   password: string,
-  config: PasswordValidationConfig,
+  config: PasswordValidationConfig
 ): string[] {
   const errors: string[] = [];
 
   if (password.length < config.minLength) {
-    errors.push(
-      `Password must be at least ${config.minLength} characters long`,
-    );
+    errors.push(`Password must be at least ${config.minLength} characters long`);
   }
 
   if (password.length > config.maxLength) {
-    errors.push(
-      `Password must be at most ${config.maxLength} characters long`,
-    );
+    errors.push(`Password must be at most ${config.maxLength} characters long`);
   }
 
   if (config.requireUppercase && !/[A-Z]/.test(password)) {
@@ -54,9 +50,7 @@ export function validatePasswordStrength(
 export class PasswordValidationPipe implements PipeTransform {
   private readonly passwordField = 'password';
 
-  constructor(
-    @Optional() private readonly configService?: ConfigService,
-  ) {}
+  constructor(@Optional() private readonly configService?: ConfigService) {}
 
   transform(value: unknown): unknown {
     if (value === null || value === undefined || typeof value !== 'object') {

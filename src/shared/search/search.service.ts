@@ -17,14 +17,19 @@ export class SearchService {
 
   async searchUsers<T = any>(
     query: string,
-    options: SearchOptions = {},
+    options: SearchOptions = {}
   ): Promise<{ data: T[]; total: number }> {
-    return this.searchTable<T>('users', ['email', 'first_name', 'last_name', 'full_name'], query, options);
+    return this.searchTable<T>(
+      'users',
+      ['email', 'first_name', 'last_name', 'full_name'],
+      query,
+      options
+    );
   }
 
   async searchTasks<T = any>(
     query: string,
-    options: SearchOptions = {},
+    options: SearchOptions = {}
   ): Promise<{ data: T[]; total: number }> {
     return this.searchTable<T>('health_tasks', ['title', 'description'], query, options);
   }
@@ -38,14 +43,14 @@ export class SearchService {
       offset?: number;
       filters?: Record<string, any>;
       orderBy?: string;
-    } = {},
+    } = {}
   ): Promise<{ data: T[]; total: number }> {
     const { limit = 10, offset = 0, filters = {}, orderBy } = options;
 
     const formattedQuery = query
       .trim()
       .split(/\s+/)
-      .map(term => `${term}:*`)
+      .map((term) => `${term}:*`)
       .join(' & ');
 
     const fieldsToSearch = searchFields.join(" || ' ' || ");
@@ -97,15 +102,9 @@ export class SearchService {
     tableName: string,
     searchFields: string[],
     query: string,
-    options: SearchOptions = {},
+    options: SearchOptions = {}
   ): Promise<{ data: T[]; total: number }> {
-    const {
-      limit = 10,
-      offset = 0,
-      filters = {},
-      orderBy,
-      fuzzy = true,
-    } = options;
+    const { limit = 10, offset = 0, filters = {}, orderBy, fuzzy = true } = options;
 
     const whereClauses: string[] = [];
     const parameters: any[] = [];
@@ -121,11 +120,11 @@ export class SearchService {
         const formattedQuery = query
           .trim()
           .split(/\s+/)
-          .map(term => `${term}:*`)
+          .map((term) => `${term}:*`)
           .join(' & ');
 
         const fieldsToSearch = searchFields
-          .map(field => `coalesce("${field}", '')`)
+          .map((field) => `coalesce("${field}", '')`)
           .join(" || ' ' || ");
 
         whereClauses.push(`to_tsvector('english', ${fieldsToSearch}) @@ to_tsquery('english', $1)`);
@@ -176,7 +175,7 @@ export class SearchService {
   private buildFuzzySearchClause(
     searchFields: string[],
     query: string,
-    startIndex: number,
+    startIndex: number
   ): { whereClause: string; parameters: any[]; rankExpression: string } {
     const trimmedQuery = query.trim();
     const fuzzyQuery = `%${trimmedQuery}%`;
@@ -191,7 +190,7 @@ export class SearchService {
       whereParts.push(`"${field}" ILIKE $${startIndex + 2}`);
 
       rankComponents.push(
-        `GREATEST(similarity("${field}", $${startIndex}), CASE WHEN "${field}" ILIKE $${startIndex + 1} THEN 0.8 ELSE 0 END, CASE WHEN "${field}" ILIKE $${startIndex + 2} THEN 0.95 ELSE 0 END)`,
+        `GREATEST(similarity("${field}", $${startIndex}), CASE WHEN "${field}" ILIKE $${startIndex + 1} THEN 0.8 ELSE 0 END, CASE WHEN "${field}" ILIKE $${startIndex + 2} THEN 0.95 ELSE 0 END)`
       );
     }
 

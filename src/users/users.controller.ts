@@ -12,12 +12,7 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UserResponseDto } from './dto/user-response.dto';
@@ -47,9 +42,7 @@ import { Observable } from 'rxjs';
 
 @Injectable()
 class JwtAuthGuard implements CanActivate {
-  canActivate(
-    context: ExecutionContext,
-  ): boolean | Promise<boolean> | Observable<boolean> {
+  canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
     // JWT verification performed by Passport strategy at the guard level
     // The user object is populated by JwtStrategy.validate()
     const request = context.switchToHttp().getRequest();
@@ -72,11 +65,12 @@ export class UsersController {
     new ValidationPipe({
       whitelist: true,
       transform: true,
-    }),
+    })
   )
   @ApiOperation({
     summary: 'Register FCM device token',
-    description: 'Registers or updates a device token for Firebase Cloud Messaging push notifications.',
+    description:
+      'Registers or updates a device token for Firebase Cloud Messaging push notifications.',
   })
   @ApiResponse({
     status: 200,
@@ -84,7 +78,7 @@ export class UsersController {
   })
   async registerDeviceToken(
     @Body() registerDeviceTokenDto: RegisterDeviceTokenDto,
-    @Req() req: AuthenticatedRequest,
+    @Req() req: AuthenticatedRequest
   ) {
     await this.usersService.registerDeviceToken(req.user.userId, registerDeviceTokenDto.token);
     return { success: true, message: 'Device token registered successfully' };
@@ -173,7 +167,7 @@ export class UsersController {
       whitelist: true, // Strip properties that don't have decorators
       forbidNonWhitelisted: true, // Reject requests with unknown fields
       transform: true,
-    }),
+    })
   )
   @ApiOperation({
     summary: 'Update current user profile',
@@ -212,7 +206,7 @@ export class UsersController {
   })
   async updateProfile(
     @Req() req: AuthenticatedRequest,
-    @Body() updateProfileDto: UpdateProfileDto,
+    @Body() updateProfileDto: UpdateProfileDto
   ): Promise<UserResponseDto> {
     return this.usersService.updateProfile(req.user.userId, updateProfileDto);
   }
@@ -224,7 +218,7 @@ export class UsersController {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-    }),
+    })
   )
   @ApiOperation({
     summary: 'Update current user profile (alias)',
@@ -236,7 +230,7 @@ export class UsersController {
   })
   async updateProfileAlias(
     @Req() req: AuthenticatedRequest,
-    @Body() updateProfileDto: UpdateProfileDto,
+    @Body() updateProfileDto: UpdateProfileDto
   ): Promise<UserResponseDto> {
     return this.usersService.updateProfile(req.user.userId, updateProfileDto);
   }

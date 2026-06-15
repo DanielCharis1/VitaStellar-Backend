@@ -7,10 +7,7 @@ import {
   SetMetadata,
 } from '@nestjs/common';
 import { DataSource, QueryRunner } from 'typeorm';
-import {
-  createParamDecorator,
-  ExecutionContext,
-} from '@nestjs/common';
+import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 
 /**
  * Interface for transaction options
@@ -40,8 +37,7 @@ export interface TransactionContext {
 @Injectable()
 export class TransactionService {
   private readonly logger = new Logger(TransactionService.name);
-  private readonly transactionStack: Map<string, TransactionContext[]> =
-    new Map();
+  private readonly transactionStack: Map<string, TransactionContext[]> = new Map();
 
   constructor(@Inject(DataSource) private readonly dataSource: DataSource) {}
 
@@ -52,10 +48,7 @@ export class TransactionService {
    * @param options - Transaction options
    * @returns QueryRunner instance
    */
-  async startTransaction(
-    context: string,
-    options: TransactionOptions = {},
-  ): Promise<QueryRunner> {
+  async startTransaction(context: string, options: TransactionOptions = {}): Promise<QueryRunner> {
     const queryRunner = this.dataSource.createQueryRunner();
     const stack = this.transactionStack.get(context) || [];
 
@@ -74,20 +67,14 @@ export class TransactionService {
 
       if (depth === 0) {
         // Start a new transaction at depth 0
-        await queryRunner.startTransaction(
-          options.isolationLevel || 'READ COMMITTED',
-        );
-        this.logger.debug(
-          `[${context}] Transaction started at depth ${depth}`,
-        );
+        await queryRunner.startTransaction(options.isolationLevel || 'READ COMMITTED');
+        this.logger.debug(`[${context}] Transaction started at depth ${depth}`);
       } else {
         // Create a savepoint for nested transactions
         const savepointName = `sp_${depth}_${Date.now()}`;
         await queryRunner.query(`SAVEPOINT ${savepointName}`);
         transactionContext['savepointName'] = savepointName;
-        this.logger.debug(
-          `[${context}] Savepoint ${savepointName} created at depth ${depth}`,
-        );
+        this.logger.debug(`[${context}] Savepoint ${savepointName} created at depth ${depth}`);
       }
 
       stack.push(transactionContext);
@@ -96,11 +83,9 @@ export class TransactionService {
       return queryRunner;
     } catch (error) {
       await queryRunner.release();
-      this.logger.error(
-        `Failed to start transaction: ${(error as Error)?.message}`,
-      );
+      this.logger.error(`Failed to start transaction: ${(error as Error)?.message}`);
       throw new InternalServerErrorException(
-        `Failed to start transaction: ${(error as Error)?.message}`,
+        `Failed to start transaction: ${(error as Error)?.message}`
       );
     }
   }
@@ -125,9 +110,7 @@ export class TransactionService {
       if (transactionContext.timeout) {
         const elapsed = Date.now() - transactionContext.startTime;
         if (elapsed > transactionContext.timeout) {
-          throw new Error(
-            `Transaction exceeded timeout of ${transactionContext.timeout}ms`,
-          );
+          throw new Error(`Transaction exceeded timeout of ${transactionContext.timeout}ms`);
         }
       }
 
@@ -139,26 +122,22 @@ export class TransactionService {
         // For nested transactions, release the savepoint
         const savepointName = transactionContext['savepointName'];
         await queryRunner.query(`RELEASE SAVEPOINT ${savepointName}`);
-        this.logger.debug(
-          `[${context}] Savepoint ${savepointName} released at depth ${depth}`,
-        );
+        this.logger.debug(`[${context}] Savepoint ${savepointName} released at depth ${depth}`);
       }
 
       stack.pop();
     } catch (error) {
-      this.logger.error(
-        `Failed to commit transaction: ${(error as Error)?.message}`,
-      );
+      this.logger.error(`Failed to commit transaction: ${(error as Error)?.message}`);
       // Attempt rollback before throwing
       try {
         await this.rollbackTransaction(context, false);
       } catch (rollbackError) {
         this.logger.error(
-          `Rollback after commit failure failed: ${(rollbackError as Error)?.message}`,
+          `Rollback after commit failure failed: ${(rollbackError as Error)?.message}`
         );
       }
       throw new InternalServerErrorException(
-        `Failed to commit transaction: ${(error as Error)?.message}`,
+        `Failed to commit transaction: ${(error as Error)?.message}`
       );
     } finally {
       // Release the query runner if this was the last transaction
@@ -175,10 +154,7 @@ export class TransactionService {
    * @param context - Transaction context
    * @param releaseRunner - Whether to release the query runner
    */
-  async rollbackTransaction(
-    context: string,
-    releaseRunner: boolean = true,
-  ): Promise<void> {
+  async rollbackTransaction(context: string, releaseRunner: boolean = true): Promise<void> {
     const stack = this.transactionStack.get(context);
 
     if (!stack || stack.length === 0) {
@@ -192,25 +168,21 @@ export class TransactionService {
       if (depth === 0) {
         // Rollback the main transaction
         await queryRunner.rollbackTransaction();
-        this.logger.debug(
-          `[${context}] Transaction rolled back at depth ${depth}`,
-        );
+        this.logger.debug(`[${context}] Transaction rolled back at depth ${depth}`);
       } else {
         // Restore to savepoint for nested transactions
         const savepointName = transactionContext['savepointName'];
         await queryRunner.query(`ROLLBACK TO SAVEPOINT ${savepointName}`);
         this.logger.debug(
-          `[${context}] Rolled back to savepoint ${savepointName} at depth ${depth}`,
+          `[${context}] Rolled back to savepoint ${savepointName} at depth ${depth}`
         );
       }
 
       stack.pop();
     } catch (error) {
-      this.logger.error(
-        `Failed to rollback transaction: ${(error as Error)?.message}`,
-      );
+      this.logger.error(`Failed to rollback transaction: ${(error as Error)?.message}`);
       throw new InternalServerErrorException(
-        `Failed to rollback transaction: ${(error as Error)?.message}`,
+        `Failed to rollback transaction: ${(error as Error)?.message}`
       );
     } finally {
       // Release the query runner if needed and this was the last transaction
@@ -232,7 +204,7 @@ export class TransactionService {
   async execute<T>(
     context: string,
     callback: (queryRunner: QueryRunner) => Promise<T>,
-    options: TransactionOptions = {},
+    options: TransactionOptions = {}
   ): Promise<T> {
     const queryRunner = await this.startTransaction(context, options);
 
@@ -256,9 +228,7 @@ export class TransactionService {
    */
   getCurrentQueryRunner(context: string): QueryRunner | null {
     const stack = this.transactionStack.get(context);
-    return stack && stack.length > 0
-      ? stack[stack.length - 1].queryRunner
-      : null;
+    return stack && stack.length > 0 ? stack[stack.length - 1].queryRunner : null;
   }
 
   /**
@@ -290,9 +260,7 @@ export class TransactionService {
       try {
         await this.rollbackTransaction(context, false);
       } catch (error) {
-        this.logger.error(
-          `Cleanup rollback failed: ${(error as Error)?.message}`,
-        );
+        this.logger.error(`Cleanup rollback failed: ${(error as Error)?.message}`);
       }
     }
 
@@ -303,7 +271,7 @@ export class TransactionService {
         await queryRunner.release();
       } catch (error) {
         this.logger.error(
-          `Failed to release query runner during cleanup: ${(error as Error)?.message}`,
+          `Failed to release query runner during cleanup: ${(error as Error)?.message}`
         );
       }
     }
@@ -338,15 +306,14 @@ export class TransactionService {
  * Decorator to inject the TransactionService
  * Usage: constructor(@InjectTransaction() private transactionService: TransactionService)
  */
-export const InjectTransaction = () =>
-  Inject(TransactionService);
+export const InjectTransaction = () => Inject(TransactionService);
 
 /**
  * Decorator for automatic transaction management
  * Handles transactions with automatic rollback on error
  *
  * @param options - Transaction options
- * 
+ *
  * Usage:
  * @Transaction({ timeout: 5000 })
  * async myMethod(
@@ -357,11 +324,7 @@ export const InjectTransaction = () =>
  * }
  */
 export function Transaction(options: TransactionOptions = {}) {
-  return function (
-    target: any,
-    propertyKey: string | symbol,
-    descriptor: PropertyDescriptor,
-  ) {
+  return function (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
 
     descriptor.value = async function (this: any, ...args: any[]) {
@@ -376,7 +339,7 @@ export function Transaction(options: TransactionOptions = {}) {
             (this as any).currentQueryRunner = queryRunner;
             return originalMethod.apply(this, args);
           },
-          options,
+          options
         );
       } finally {
         // Cleanup
@@ -393,13 +356,11 @@ export function Transaction(options: TransactionOptions = {}) {
  * Parameter decorator to inject the current QueryRunner
  * Usage: @QueryRunnerInject() queryRunner: QueryRunner
  */
-export const QueryRunnerInject = createParamDecorator(
-  (data: unknown, ctx: ExecutionContext) => {
-    // Get the instance from the context
-    const instance = ctx.getClass().prototype.constructor;
-    return instance.prototype.currentQueryRunner || null;
-  },
-);
+export const QueryRunnerInject = createParamDecorator((data: unknown, ctx: ExecutionContext) => {
+  // Get the instance from the context
+  const instance = ctx.getClass().prototype.constructor;
+  return instance.prototype.currentQueryRunner || null;
+});
 
 /**
  * Parameter decorator to inject the transaction context
@@ -409,7 +370,7 @@ export const TransactionContextDecorator = createParamDecorator(
   (data: unknown, ctx: ExecutionContext) => {
     const request = ctx.switchToHttp().getRequest();
     return request['transactionContext'] || null;
-  },
+  }
 );
 
 /**

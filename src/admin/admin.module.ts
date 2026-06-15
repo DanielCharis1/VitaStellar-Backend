@@ -14,17 +14,8 @@ import { FailedRewardJobService } from './rewards/failed-reward-job.service';
 import { RewardModule } from '../rewards/reward.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([User]),
-    AuditModule,
-    TaskAssignmentModule,
-    RewardModule,
-  ],
-  controllers: [
-    AdminUsersController,
-    AdminController,
-    FailedRewardJobController,
-  ],
+  imports: [TypeOrmModule.forFeature([User]), AuditModule, TaskAssignmentModule, RewardModule],
+  controllers: [AdminUsersController, AdminController, FailedRewardJobController],
   providers: [
     AdminUsersService,
     UsersService,

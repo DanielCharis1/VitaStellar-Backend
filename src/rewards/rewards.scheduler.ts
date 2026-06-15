@@ -20,7 +20,7 @@ export class RewardsScheduler {
 
   constructor(
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    private readonly userRepository: Repository<User>
   ) {}
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, { timeZone: 'UTC' })
@@ -32,15 +32,13 @@ export class RewardsScheduler {
     return this.runDailyRewardsReset('manual');
   }
 
-  private async runDailyRewardsReset(
-    trigger: 'cron' | 'manual',
-  ): Promise<DailyRewardsResetResult> {
+  private async runDailyRewardsReset(trigger: 'cron' | 'manual'): Promise<DailyRewardsResetResult> {
     const startedAt = new Date();
     const startedAtIso = startedAt.toISOString();
     const totalUsers = await this.userRepository.count();
 
     this.logger.log(
-      `[${trigger}] Starting daily rewards reset at ${startedAtIso} for ${totalUsers} users`,
+      `[${trigger}] Starting daily rewards reset at ${startedAtIso} for ${totalUsers} users`
     );
 
     let resetCount = 0;
@@ -60,29 +58,23 @@ export class RewardsScheduler {
       }
 
       try {
-        const result = await this.userRepository.update(
-          { id: In(userIds) },
-          { dailyXlmEarned: 0 },
-        );
+        const result = await this.userRepository.update({ id: In(userIds) }, { dailyXlmEarned: 0 });
         resetCount += result.affected ?? userIds.length;
       } catch (error) {
         this.logger.error(
           `[${trigger}] Failed resetting batch at offset ${offset}: ${error.message}`,
-          error.stack,
+          error.stack
         );
 
         for (const userId of userIds) {
           try {
-            const result = await this.userRepository.update(
-              { id: userId },
-              { dailyXlmEarned: 0 },
-            );
+            const result = await this.userRepository.update({ id: userId }, { dailyXlmEarned: 0 });
             resetCount += result.affected ?? 1;
           } catch (userError) {
             failedCount += 1;
             this.logger.error(
               `[${trigger}] Failed resetting daily rewards for user ${userId}: ${userError.message}`,
-              userError.stack,
+              userError.stack
             );
           }
         }
@@ -100,7 +92,7 @@ export class RewardsScheduler {
     };
 
     this.logger.log(
-      `[${trigger}] Daily rewards reset completed. Reset ${resetCount} users, failed ${failedCount}, duration ${durationMs}ms`,
+      `[${trigger}] Daily rewards reset completed. Reset ${resetCount} users, failed ${failedCount}, duration ${durationMs}ms`
     );
 
     return result;

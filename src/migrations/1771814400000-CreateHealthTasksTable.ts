@@ -1,9 +1,4 @@
-import {
-  MigrationInterface,
-  QueryRunner,
-  Table,
-  TableForeignKey,
-} from 'typeorm';
+import { MigrationInterface, QueryRunner, Table, TableForeignKey } from 'typeorm';
 
 export class CreateHealthTasksTable1771814400000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -82,7 +77,7 @@ export class CreateHealthTasksTable1771814400000 implements MigrationInterface {
             default: 'now()',
           },
         ],
-      }),
+      })
     );
 
     // Add foreign keys
@@ -93,7 +88,7 @@ export class CreateHealthTasksTable1771814400000 implements MigrationInterface {
         referencedColumnNames: ['id'],
         referencedTableName: 'task_categories',
         onDelete: 'SET NULL',
-      }),
+      })
     );
 
     await queryRunner.createForeignKey(
@@ -103,7 +98,7 @@ export class CreateHealthTasksTable1771814400000 implements MigrationInterface {
         referencedColumnNames: ['id'],
         referencedTableName: 'users',
         onDelete: 'CASCADE',
-      }),
+      })
     );
   }
 
@@ -114,10 +109,10 @@ export class CreateHealthTasksTable1771814400000 implements MigrationInterface {
       return;
     }
     const categoryForeignKey = table.foreignKeys.find(
-      (fk) => fk.columnNames.indexOf('categoryId') !== -1,
+      (fk) => fk.columnNames.indexOf('categoryId') !== -1
     );
     const authorForeignKey = table.foreignKeys.find(
-      (fk) => fk.columnNames.indexOf('authorId') !== -1,
+      (fk) => fk.columnNames.indexOf('authorId') !== -1
     );
     if (categoryForeignKey) {
       await queryRunner.dropForeignKey('health_tasks', categoryForeignKey);

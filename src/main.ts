@@ -21,16 +21,17 @@ function addSecurityHeaders(req, res, next) {
   res.setHeader('X-Content-Type-Options', 'nosniff');
 
   // Content Security Policy
-  res.setHeader('Content-Security-Policy',
+  res.setHeader(
+    'Content-Security-Policy',
     "default-src 'self'; " +
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://www.gstatic.com; " +
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
-    "font-src 'self' https://fonts.gstatic.com; " +
-    "img-src 'self' data: https:; " +
-    "connect-src 'self' https://api.stellar.org https://horizon-testnet.stellar.org; " +
-    "frame-ancestors 'none'; " +
-    "base-uri 'self'; " +
-    "form-action 'self';"
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://www.gstatic.com; " +
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+      "font-src 'self' https://fonts.gstatic.com; " +
+      "img-src 'self' data: https:; " +
+      "connect-src 'self' https://api.stellar.org https://horizon-testnet.stellar.org; " +
+      "frame-ancestors 'none'; " +
+      "base-uri 'self'; " +
+      "form-action 'self';"
   );
 
   // Additional security headers
@@ -58,7 +59,7 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-    }),
+    })
   );
 
   // Global exception filter
@@ -90,9 +91,7 @@ async function bootstrap() {
   // Swagger documentation
   const config = new DocumentBuilder()
     .setTitle('VitaStellar API')
-    .setDescription(
-      'Decentralized Health & Wellness Powered by Stellar',
-    )
+    .setDescription('Decentralized Health & Wellness Powered by Stellar')
     .setVersion('1.0.0')
     .addBearerAuth({
       type: 'http',

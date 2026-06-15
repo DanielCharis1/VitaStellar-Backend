@@ -1,15 +1,7 @@
 // src/migrations/1700000000000-CreateDailyTaskAssignments.ts
-import {
-  MigrationInterface,
-  QueryRunner,
-  Table,
-  TableForeignKey,
-  TableUnique,
-} from 'typeorm';
+import { MigrationInterface, QueryRunner, Table, TableForeignKey, TableUnique } from 'typeorm';
 
-export class CreateDailyTaskAssignments1700000000000
-  implements MigrationInterface
-{
+export class CreateDailyTaskAssignments1700000000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Main assignments table
     await queryRunner.createTable(
@@ -28,7 +20,7 @@ export class CreateDailyTaskAssignments1700000000000
           { name: 'createdAt', type: 'timestamptz', default: 'now()' },
         ],
       }),
-      true,
+      true
     );
 
     // Unique constraint: one assignment per user per day
@@ -37,7 +29,7 @@ export class CreateDailyTaskAssignments1700000000000
       new TableUnique({
         name: 'UQ_assignment_user_date',
         columnNames: ['userId', 'assignedDate'],
-      }),
+      })
     );
 
     // Junction table for ManyToMany
@@ -49,7 +41,7 @@ export class CreateDailyTaskAssignments1700000000000
           { name: 'task_id', type: 'uuid' },
         ],
       }),
-      true,
+      true
     );
 
     // Foreign keys
@@ -60,7 +52,7 @@ export class CreateDailyTaskAssignments1700000000000
         referencedTableName: 'users',
         referencedColumnNames: ['id'],
         onDelete: 'CASCADE',
-      }),
+      })
     );
 
     await queryRunner.createForeignKey(
@@ -70,7 +62,7 @@ export class CreateDailyTaskAssignments1700000000000
         referencedTableName: 'daily_task_assignments',
         referencedColumnNames: ['id'],
         onDelete: 'CASCADE',
-      }),
+      })
     );
 
     // Note: Foreign key to health_tasks table will be added in a later migration

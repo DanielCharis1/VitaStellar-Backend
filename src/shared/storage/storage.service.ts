@@ -36,17 +36,38 @@ export class StorageService {
     }
   }
 
+  /**
+   * Upload a file from a Multer-like file object, returning its key.
+   * Wraps saveFile for compatibility with modules expecting S3-style API.
+   */
+  async uploadFile(
+    file: { originalname: string; buffer: Buffer; mimetype: string },
+    folder: string = 'general'
+  ): Promise<string> {
+    const result = await this.saveFile(file.buffer, file.originalname, file.mimetype, folder);
+    // Return the relative path as the "key" for later retrieval
+    return folder ? `${folder}/${result.filename}` : result.filename;
+  }
+
+  /**
+   * Get a download URL for a previously uploaded file.
+   * Returns a local /uploads/... URL for local storage.
+   */
+  async getDownloadUrl(fileKey: string): Promise<string> {
+    return `/uploads/${fileKey}`;
+  }
+
   async saveFile(
     file: Buffer,
     originalName: string,
     mimetype: string,
-    subfolder?: string,
+    subfolder?: string
   ): Promise<UploadResult> {
     const filename = `${uuidv4()}-${originalName}`;
     const targetDir = subfolder ? join(this.uploadDir, subfolder) : this.uploadDir;
-    
+
     await this.ensureDirectoryExists(targetDir);
-    
+
     const filePath = join(targetDir, filename);
     await fs.writeFile(filePath, file);
 
@@ -116,7 +137,7 @@ export class StorageService {
    */
   async saveDataExport(
     userId: string,
-    payload: Record<string, unknown>,
+    payload: Record<string, unknown>
   ): Promise<DataExportResult> {
     const exportId = uuidv4();
     const downloadToken = randomBytes(32).toString('hex');
@@ -137,21 +158,16 @@ export class StorageService {
         filePath: saved.path,
         expiresAt: expiresAt.toISOString(),
       }),
-      'utf-8',
+      'utf-8'
     );
 
     return { exportId, filePath: saved.path, downloadToken, expiresAt };
   }
 
   async resolveDataExportDownload(
-    downloadToken: string,
+    downloadToken: string
   ): Promise<{ filePath: string; userId: string; exportId: string } | null> {
-    const tokenPath = join(
-      this.uploadDir,
-      'exports',
-      '.tokens',
-      `${downloadToken}.json`,
-    );
+    const tokenPath = join(this.uploadDir, 'exports', '.tokens', `${downloadToken}.json`);
 
     if (!(await this.fileExists(tokenPath))) {
       return null;
@@ -185,8 +201,7 @@ export class StorageService {
   }
 
   buildDataExportDownloadUrl(downloadToken: string, baseUrl?: string): string {
-    const appBase =
-      baseUrl ?? process.env.APP_URL ?? 'http://localhost:3001';
+    const appBase = baseUrl ?? process.env.APP_URL ?? 'http://localhost:3001';
     return `${appBase.replace(/\/$/, '')}/users/data-export/download?token=${downloadToken}`;
   }
 

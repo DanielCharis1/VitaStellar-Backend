@@ -1,14 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Param,
-  Body,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, Req, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { NotesService } from '../services/notes.service';
 
@@ -19,13 +9,11 @@ import { Observable } from 'rxjs';
 
 @Injectable()
 class JwtAuthGuard implements CanActivate {
-  canActivate(
-    context: ExecutionContext,
-  ): boolean | Promise<boolean> | Observable<boolean> {
+  canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
     const request = context.switchToHttp().getRequest();
     // In real implementation, this would extract user from JWT
     if (!request.user) {
-      request.user = { userId: 'mock-user-id' }; 
+      request.user = { userId: 'mock-user-id' };
     }
     return true;
   }
@@ -46,7 +34,7 @@ export class NotesController {
   async addNote(
     @Param('taskId') taskId: string,
     @Body('content') content: string,
-    @Req() req: AuthenticatedRequest,
+    @Req() req: AuthenticatedRequest
   ) {
     return this.notesService.addNote(taskId, req.user.userId, content);
   }
@@ -62,17 +50,14 @@ export class NotesController {
   async updateNote(
     @Param('noteId') noteId: string,
     @Body('content') content: string,
-    @Req() req: AuthenticatedRequest,
+    @Req() req: AuthenticatedRequest
   ) {
     return this.notesService.updateNote(noteId, req.user.userId, content);
   }
 
   @Delete(':noteId')
   @ApiOperation({ summary: 'Delete own note' })
-  async deleteNote(
-    @Param('noteId') noteId: string,
-    @Req() req: AuthenticatedRequest,
-  ) {
+  async deleteNote(@Param('noteId') noteId: string, @Req() req: AuthenticatedRequest) {
     await this.notesService.deleteNote(noteId, req.user.userId);
     return { success: true };
   }

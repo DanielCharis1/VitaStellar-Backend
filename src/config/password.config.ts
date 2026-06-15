@@ -27,10 +27,7 @@ export const DEFAULT_PASSWORD_VALIDATION_CONFIG: PasswordValidationConfig = {
   requireSpecialChars: true,
 };
 
-export function parseBooleanEnv(
-  value: string | undefined,
-  defaultValue: boolean,
-): boolean {
+export function parseBooleanEnv(value: string | undefined, defaultValue: boolean): boolean {
   if (value === undefined || value.trim() === '') {
     return defaultValue;
   }
@@ -38,10 +35,7 @@ export function parseBooleanEnv(
   return ['true', '1', 'yes'].includes(value.trim().toLowerCase());
 }
 
-export function parseIntEnv(
-  value: string | undefined,
-  defaultValue: number,
-): number {
+export function parseIntEnv(value: string | undefined, defaultValue: number): number {
   if (value === undefined || value.trim() === '') {
     return defaultValue;
   }
@@ -54,59 +48,59 @@ export function loadPasswordValidationConfigFromEnv(): PasswordValidationConfig 
   return {
     minLength: parseIntEnv(
       process.env[PASSWORD_ENV_KEYS.minLength],
-      DEFAULT_PASSWORD_VALIDATION_CONFIG.minLength,
+      DEFAULT_PASSWORD_VALIDATION_CONFIG.minLength
     ),
     maxLength: parseIntEnv(
       process.env[PASSWORD_ENV_KEYS.maxLength],
-      DEFAULT_PASSWORD_VALIDATION_CONFIG.maxLength,
+      DEFAULT_PASSWORD_VALIDATION_CONFIG.maxLength
     ),
     requireUppercase: parseBooleanEnv(
       process.env[PASSWORD_ENV_KEYS.requireUppercase],
-      DEFAULT_PASSWORD_VALIDATION_CONFIG.requireUppercase,
+      DEFAULT_PASSWORD_VALIDATION_CONFIG.requireUppercase
     ),
     requireLowercase: parseBooleanEnv(
       process.env[PASSWORD_ENV_KEYS.requireLowercase],
-      DEFAULT_PASSWORD_VALIDATION_CONFIG.requireLowercase,
+      DEFAULT_PASSWORD_VALIDATION_CONFIG.requireLowercase
     ),
     requireNumbers: parseBooleanEnv(
       process.env[PASSWORD_ENV_KEYS.requireNumbers],
-      DEFAULT_PASSWORD_VALIDATION_CONFIG.requireNumbers,
+      DEFAULT_PASSWORD_VALIDATION_CONFIG.requireNumbers
     ),
     requireSpecialChars: parseBooleanEnv(
       process.env[PASSWORD_ENV_KEYS.requireSpecialChars],
-      DEFAULT_PASSWORD_VALIDATION_CONFIG.requireSpecialChars,
+      DEFAULT_PASSWORD_VALIDATION_CONFIG.requireSpecialChars
     ),
   };
 }
 
 export function resolvePasswordValidationConfig(
-  configService?: ConfigService,
+  configService?: ConfigService
 ): PasswordValidationConfig {
   if (configService) {
     return {
       minLength: configService.get<number>(
         'password.minLength',
-        DEFAULT_PASSWORD_VALIDATION_CONFIG.minLength,
+        DEFAULT_PASSWORD_VALIDATION_CONFIG.minLength
       ),
       maxLength: configService.get<number>(
         'password.maxLength',
-        DEFAULT_PASSWORD_VALIDATION_CONFIG.maxLength,
+        DEFAULT_PASSWORD_VALIDATION_CONFIG.maxLength
       ),
       requireUppercase: configService.get<boolean>(
         'password.requireUppercase',
-        DEFAULT_PASSWORD_VALIDATION_CONFIG.requireUppercase,
+        DEFAULT_PASSWORD_VALIDATION_CONFIG.requireUppercase
       ),
       requireLowercase: configService.get<boolean>(
         'password.requireLowercase',
-        DEFAULT_PASSWORD_VALIDATION_CONFIG.requireLowercase,
+        DEFAULT_PASSWORD_VALIDATION_CONFIG.requireLowercase
       ),
       requireNumbers: configService.get<boolean>(
         'password.requireNumbers',
-        DEFAULT_PASSWORD_VALIDATION_CONFIG.requireNumbers,
+        DEFAULT_PASSWORD_VALIDATION_CONFIG.requireNumbers
       ),
       requireSpecialChars: configService.get<boolean>(
         'password.requireSpecialChars',
-        DEFAULT_PASSWORD_VALIDATION_CONFIG.requireSpecialChars,
+        DEFAULT_PASSWORD_VALIDATION_CONFIG.requireSpecialChars
       ),
     };
   }

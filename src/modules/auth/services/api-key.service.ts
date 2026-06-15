@@ -8,7 +8,7 @@ import * as crypto from 'crypto';
 export class ApiKeyService {
   constructor(
     @InjectRepository(ApiKey)
-    private readonly apiKeyRepository: Repository<ApiKey>,
+    private readonly apiKeyRepository: Repository<ApiKey>
   ) {}
 
   async generateApiKey(userId: number, scopes: string[] = []): Promise<ApiKey> {

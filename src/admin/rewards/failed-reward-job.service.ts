@@ -16,15 +16,13 @@ export class FailedRewardJobService {
   constructor(
     @InjectRepository(FailedRewardJob)
     private readonly failedRewardJobRepository: Repository<FailedRewardJob>,
-    private readonly deadLetterProcessor: DeadLetterProcessor,
+    private readonly deadLetterProcessor: DeadLetterProcessor
   ) {}
 
   /**
    * Get paginated list of failed reward jobs for admin review.
    */
-  async listFailedJobs(
-    query: ListFailedJobsDto,
-  ): Promise<ListFailedJobsResponseDto> {
+  async listFailedJobs(query: ListFailedJobsDto): Promise<ListFailedJobsResponseDto> {
     const { page = 1, limit = 20 } = query;
     const skip = (page - 1) * limit;
 
@@ -56,23 +54,17 @@ export class FailedRewardJobService {
   /**
    * Replay a specific failed job by re-queuing it.
    */
-  async replayFailedJob(
-    failedJobId: string,
-  ): Promise<ReplayFailedJobResponseDto> {
+  async replayFailedJob(failedJobId: string): Promise<ReplayFailedJobResponseDto> {
     const failedJob = await this.failedRewardJobRepository.findOne({
       where: { id: failedJobId },
     });
 
     if (!failedJob) {
-      throw new NotFoundException(
-        `Failed reward job with ID ${failedJobId} not found`,
-      );
+      throw new NotFoundException(`Failed reward job with ID ${failedJobId} not found`);
     }
 
     try {
-      const { jobId } = await this.deadLetterProcessor.replayFailedJob(
-        failedJobId,
-      );
+      const { jobId } = await this.deadLetterProcessor.replayFailedJob(failedJobId);
 
       return {
         success: true,

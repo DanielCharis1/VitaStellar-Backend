@@ -10,12 +10,7 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { NotificationPreferencesService } from './notification-preferences.service';
 import { UpdatePreferencesDto } from './dto/update-preferences.dto';
 import { NotificationPreference } from '../entities/notification-preference.entity';
@@ -35,9 +30,7 @@ import { Observable } from 'rxjs';
 
 @Injectable()
 class JwtAuthGuard implements CanActivate {
-  canActivate(
-    context: ExecutionContext,
-  ): boolean | Promise<boolean> | Observable<boolean> {
+  canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
     const request = context.switchToHttp().getRequest();
     request.user = { userId: 'mock-user-id' };
     return true;
@@ -49,16 +42,13 @@ class JwtAuthGuard implements CanActivate {
 @UseGuards(JwtAuthGuard)
 @Controller('notifications/preferences')
 export class NotificationPreferencesController {
-  constructor(
-    private readonly notificationPreferencesService: NotificationPreferencesService,
-  ) {}
+  constructor(private readonly notificationPreferencesService: NotificationPreferencesService) {}
 
   @Get()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Get notification preferences',
-    description:
-      'Returns the notification preferences for the currently authenticated user.',
+    description: 'Returns the notification preferences for the currently authenticated user.',
   })
   @ApiResponse({
     status: 200,
@@ -88,9 +78,7 @@ export class NotificationPreferencesController {
     status: 404,
     description: 'Notification preferences not found',
   })
-  async getPreferences(
-    @Req() req: AuthenticatedRequest,
-  ): Promise<NotificationPreference> {
+  async getPreferences(@Req() req: AuthenticatedRequest): Promise<NotificationPreference> {
     return this.notificationPreferencesService.getPreferences(req.user.userId);
   }
 
@@ -101,7 +89,7 @@ export class NotificationPreferencesController {
       whitelist: true,
       forbidNonWhitelisted: false,
       transform: true,
-    }),
+    })
   )
   @ApiOperation({
     summary: 'Update notification preferences',
@@ -127,11 +115,8 @@ export class NotificationPreferencesController {
   })
   async updatePreferences(
     @Req() req: AuthenticatedRequest,
-    @Body() updateDto: UpdatePreferencesDto,
+    @Body() updateDto: UpdatePreferencesDto
   ): Promise<NotificationPreference> {
-    return this.notificationPreferencesService.updatePreferences(
-      req.user.userId,
-      updateDto,
-    );
+    return this.notificationPreferencesService.updatePreferences(req.user.userId, updateDto);
   }
 }

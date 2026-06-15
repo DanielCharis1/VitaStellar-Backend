@@ -23,8 +23,7 @@ export class CreateTaskDto {
 
   @ApiPropertyOptional({
     description: 'Task description',
-    example:
-      'Walk at least 10,000 steps daily to maintain cardiovascular health',
+    example: 'Walk at least 10,000 steps daily to maintain cardiovascular health',
   })
   @IsString()
   @IsOptional()

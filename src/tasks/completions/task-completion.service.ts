@@ -9,10 +9,7 @@ import { Repository } from 'typeorm';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import {
-  TaskCompletion,
-  TaskCompletionStatus,
-} from '../entities/task-completion.entity';
+import { TaskCompletion, TaskCompletionStatus } from '../entities/task-completion.entity';
 import { HealthTask } from '../entities/health-task.entity';
 import { CompleteTaskDto, ProofType } from './dto/complete-task.dto';
 import {
@@ -35,7 +32,7 @@ export class TaskCompletionService {
     private rewardQueue: Queue,
     @InjectQueue(PROOF_VERIFICATION_QUEUE)
     private proofVerificationQueue: Queue,
-    private eventEmitter: EventEmitter2,
+    private eventEmitter: EventEmitter2
   ) {}
 
   async completeTask(userId: string, dto: CompleteTaskDto) {
@@ -58,9 +55,7 @@ export class TaskCompletionService {
       .getOne();
 
     if (existing) {
-      const nextAvailableAt = new Date(
-        existing.completedAt.getTime() + 24 * 60 * 60 * 1000,
-      );
+      const nextAvailableAt = new Date(existing.completedAt.getTime() + 24 * 60 * 60 * 1000);
       throw new ConflictException({
         message: 'Task already completed within the last 24 hours',
         nextAvailableAt,
@@ -103,7 +98,7 @@ export class TaskCompletionService {
       await this.proofVerificationQueue.add(
         'verify-proof',
         { completionId: saved.id },
-        { attempts: 3, backoff: { type: 'exponential', delay: 2000 } },
+        { attempts: 3, backoff: { type: 'exponential', delay: 2000 } }
       );
 
       this.eventEmitter.emit('task.completed', {

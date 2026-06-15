@@ -1,9 +1,4 @@
-import {
-  MigrationInterface,
-  QueryRunner,
-  Table,
-  TableForeignKey,
-} from 'typeorm';
+import { MigrationInterface, QueryRunner, Table, TableForeignKey } from 'typeorm';
 
 export class CreateStreaksTable1740500000000 implements MigrationInterface {
   name = 'CreateStreaksTable1740500000000';
@@ -52,7 +47,7 @@ export class CreateStreaksTable1740500000000 implements MigrationInterface {
           },
         ],
       }),
-      true,
+      true
     );
 
     await queryRunner.createForeignKey(
@@ -63,7 +58,7 @@ export class CreateStreaksTable1740500000000 implements MigrationInterface {
         referencedTableName: 'users',
         referencedColumnNames: ['id'],
         onDelete: 'CASCADE',
-      }),
+      })
     );
   }
 

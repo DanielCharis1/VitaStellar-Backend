@@ -58,7 +58,7 @@ export class QueueService {
     @InjectQueue(PROOF_VERIFICATION_QUEUE) private proofVerificationQueue: Queue,
     @InjectQueue(USER_ACTIVITY_QUEUE) private userActivityQueue: Queue,
     @InjectQueue(DATA_PROCESSING_QUEUE) private dataProcessingQueue: Queue,
-    @InjectQueue(REWARD_DEAD_LETTER_QUEUE) private deadLetterQueue: Queue,
+    @InjectQueue(REWARD_DEAD_LETTER_QUEUE) private deadLetterQueue: Queue
   ) {
     this.queues = new Map<QueueName, Queue>([
       [REWARD_QUEUE, this.rewardQueue],
@@ -78,7 +78,7 @@ export class QueueService {
     queueName: QueueName,
     jobName: string,
     data: T,
-    options?: QueueJobOptions,
+    options?: QueueJobOptions
   ): Promise<Job<T>> {
     const queue = this.queues.get(queueName);
     if (!queue) {
@@ -101,15 +101,10 @@ export class QueueService {
         ...options,
       });
 
-      this.logger.log(
-        `Job ${jobName} added to queue ${queueName} with ID: ${job.id}`,
-      );
+      this.logger.log(`Job ${jobName} added to queue ${queueName} with ID: ${job.id}`);
       return job;
     } catch (error) {
-      this.logger.error(
-        `Failed to add job ${jobName} to queue ${queueName}:`,
-        error,
-      );
+      this.logger.error(`Failed to add job ${jobName} to queue ${queueName}:`, error);
       throw error;
     }
   }
@@ -119,14 +114,9 @@ export class QueueService {
    */
   async enqueueBulkTaskAssignment(
     data: BulkTaskAssignmentJobData,
-    options?: QueueJobOptions,
+    options?: QueueJobOptions
   ): Promise<Job<BulkTaskAssignmentJobData>> {
-    return this.addJob(
-      DATA_PROCESSING_QUEUE,
-      BULK_TASK_ASSIGNMENT_JOB,
-      data,
-      options,
-    );
+    return this.addJob(DATA_PROCESSING_QUEUE, BULK_TASK_ASSIGNMENT_JOB, data, options);
   }
 
   /**
@@ -137,7 +127,7 @@ export class QueueService {
     jobName: string,
     data: T,
     delayMs: number,
-    options?: JobOptions,
+    options?: JobOptions
   ): Promise<Job<T>> {
     return this.addJob(queueName, jobName, data, {
       ...options,
@@ -178,10 +168,7 @@ export class QueueService {
         timestamp: job.timestamp,
       };
     } catch (error) {
-      this.logger.error(
-        `Failed to get job status for job ${jobId} in queue ${queueName}:`,
-        error,
-      );
+      this.logger.error(`Failed to get job status for job ${jobId} in queue ${queueName}:`, error);
       throw error;
     }
   }
@@ -196,14 +183,16 @@ export class QueueService {
     }
 
     try {
-      const [waiting, active, completed, failed, delayed, paused] = await Promise.all([
+      const [waiting, active, completed, failed, delayed] = await Promise.all([
         queue.getWaiting(),
         queue.getActive(),
         queue.getCompleted(),
         queue.getFailed(),
         queue.getDelayed(),
-        queue.getPaused(),
       ]);
+
+      // Bull v4 does not have getPaused(); count paused via getJobs
+      const pausedJobs = await queue.getJobs(['paused']);
 
       return {
         waiting: waiting.length,
@@ -211,13 +200,10 @@ export class QueueService {
         completed: completed.length,
         failed: failed.length,
         delayed: delayed.length,
-        paused: paused.length,
+        paused: pausedJobs.length,
       };
     } catch (error) {
-      this.logger.error(
-        `Failed to get stats for queue ${queueName}:`,
-        error,
-      );
+      this.logger.error(`Failed to get stats for queue ${queueName}:`, error);
       throw error;
     }
   }
@@ -266,10 +252,7 @@ export class QueueService {
       this.logger.log(`Job ${jobId} retried in queue ${queueName}`);
       return job;
     } catch (error) {
-      this.logger.error(
-        `Failed to retry job ${jobId} in queue ${queueName}:`,
-        error,
-      );
+      this.logger.error(`Failed to retry job ${jobId} in queue ${queueName}:`, error);
       throw error;
     }
   }
@@ -292,10 +275,7 @@ export class QueueService {
       await job.remove();
       this.logger.log(`Job ${jobId} cancelled in queue ${queueName}`);
     } catch (error) {
-      this.logger.error(
-        `Failed to cancel job ${jobId} in queue ${queueName}:`,
-        error,
-      );
+      this.logger.error(`Failed to cancel job ${jobId} in queue ${queueName}:`, error);
       throw error;
     }
   }
@@ -303,11 +283,7 @@ export class QueueService {
   /**
    * Move failed job to dead letter queue
    */
-  async moveToDeadLetter(
-    queueName: QueueName,
-    jobId: string,
-    reason?: string,
-  ): Promise<void> {
+  async moveToDeadLetter(queueName: QueueName, jobId: string, reason?: string): Promise<void> {
     const queue = this.queues.get(queueName);
     if (!queue) {
       throw new Error(`Queue ${queueName} not found`);
@@ -333,15 +309,10 @@ export class QueueService {
 
       // Remove from original queue
       await job.remove();
-      
-      this.logger.log(
-        `Job ${jobId} moved to dead letter queue from ${queueName}`,
-      );
+
+      this.logger.log(`Job ${jobId} moved to dead letter queue from ${queueName}`);
     } catch (error) {
-      this.logger.error(
-        `Failed to move job ${jobId} to dead letter queue:`,
-        error,
-      );
+      this.logger.error(`Failed to move job ${jobId} to dead letter queue:`, error);
       throw error;
     }
   }
@@ -358,9 +329,9 @@ export class QueueService {
     try {
       await queue.clean(0, 'completed');
       await queue.clean(0, 'failed');
-      await queue.clean(0, 'waiting');
+      await queue.clean(0, 'wait');
       await queue.clean(0, 'delayed');
-      
+
       this.logger.log(`Queue ${queueName} cleared`);
     } catch (error) {
       this.logger.error(`Failed to clear queue ${queueName}:`, error);
@@ -411,7 +382,7 @@ export class QueueService {
     queueName: QueueName,
     status: 'waiting' | 'active' | 'completed' | 'failed' | 'delayed',
     start?: number,
-    end?: number,
+    end?: number
   ): Promise<Job[]> {
     const queue = this.queues.get(queueName);
     if (!queue) {
@@ -421,10 +392,7 @@ export class QueueService {
     try {
       return await queue.getJobs([status], start, end);
     } catch (error) {
-      this.logger.error(
-        `Failed to get ${status} jobs from queue ${queueName}:`,
-        error,
-      );
+      this.logger.error(`Failed to get ${status} jobs from queue ${queueName}:`, error);
       throw error;
     }
   }

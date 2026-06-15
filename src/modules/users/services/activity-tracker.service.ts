@@ -7,8 +7,6 @@ import { Request } from 'express';
 interface AuthenticatedRequest extends Request {
   user: { userId: string; role?: string };
   headers: Record<string, string | string[] | undefined>;
-  connection?: { remoteAddress?: string };
-  socket?: { remoteAddress?: string };
 }
 
 interface ActivityMetadata {
@@ -26,29 +24,41 @@ interface ActivityMetadata {
 export class ActivityTrackerService {
   constructor(
     @InjectRepository(UserActivity)
-    private readonly activityRepository: Repository<UserActivity>,
+    private readonly activityRepository: Repository<UserActivity>
   ) {}
 
   async trackLogin(
     userId: string,
     request?: AuthenticatedRequest,
-    metadata?: ActivityMetadata,
+    metadata?: ActivityMetadata
   ): Promise<UserActivity> {
-    return this.createActivity(userId, ActivityType.LOGIN, 'User logged in', {
-      ...metadata,
-      userAgent: request?.get('User-Agent'),
-    }, request);
+    return this.createActivity(
+      userId,
+      ActivityType.LOGIN,
+      'User logged in',
+      {
+        ...metadata,
+        userAgent: request?.get('User-Agent'),
+      },
+      request
+    );
   }
 
   async trackLogout(
     userId: string,
     request?: AuthenticatedRequest,
-    metadata?: ActivityMetadata,
+    metadata?: ActivityMetadata
   ): Promise<UserActivity> {
-    return this.createActivity(userId, ActivityType.LOGOUT, 'User logged out', {
-      ...metadata,
-      userAgent: request?.get('User-Agent'),
-    }, request);
+    return this.createActivity(
+      userId,
+      ActivityType.LOGOUT,
+      'User logged out',
+      {
+        ...metadata,
+        userAgent: request?.get('User-Agent'),
+      },
+      request
+    );
   }
 
   async trackApiCall(
@@ -58,7 +68,7 @@ export class ActivityTrackerService {
     statusCode: number,
     responseTime?: number,
     request?: AuthenticatedRequest,
-    metadata?: ActivityMetadata,
+    metadata?: ActivityMetadata
   ): Promise<UserActivity> {
     return this.createActivity(
       userId,
@@ -71,7 +81,7 @@ export class ActivityTrackerService {
         responseTime,
         ...metadata,
       },
-      request,
+      request
     );
   }
 
@@ -79,11 +89,9 @@ export class ActivityTrackerService {
     userId: string,
     oldValues: Record<string, any>,
     newValues: Record<string, any>,
-    request?: AuthenticatedRequest,
+    request?: AuthenticatedRequest
   ): Promise<UserActivity> {
-    const changedFields = Object.keys(newValues).filter(
-      key => oldValues[key] !== newValues[key],
-    );
+    const changedFields = Object.keys(newValues).filter((key) => oldValues[key] !== newValues[key]);
 
     return this.createActivity(
       userId,
@@ -94,7 +102,7 @@ export class ActivityTrackerService {
         newValues,
         changedFields,
       },
-      request,
+      request
     );
   }
 
@@ -102,7 +110,7 @@ export class ActivityTrackerService {
     userId: string,
     taskId: string,
     taskTitle: string,
-    request?: AuthenticatedRequest,
+    request?: AuthenticatedRequest
   ): Promise<UserActivity> {
     return this.createActivity(
       userId,
@@ -112,7 +120,7 @@ export class ActivityTrackerService {
         taskId,
         taskTitle,
       },
-      request,
+      request
     );
   }
 
@@ -120,7 +128,7 @@ export class ActivityTrackerService {
     userId: string,
     taskId: string,
     taskTitle: string,
-    request?: AuthenticatedRequest,
+    request?: AuthenticatedRequest
   ): Promise<UserActivity> {
     return this.createActivity(
       userId,
@@ -130,14 +138,14 @@ export class ActivityTrackerService {
         taskId,
         taskTitle,
       },
-      request,
+      request
     );
   }
 
   async trackAvatarUpdated(
     userId: string,
     avatarUrl: string,
-    request?: AuthenticatedRequest,
+    request?: AuthenticatedRequest
   ): Promise<UserActivity> {
     return this.createActivity(
       userId,
@@ -146,7 +154,7 @@ export class ActivityTrackerService {
       {
         avatarUrl,
       },
-      request,
+      request
     );
   }
 
@@ -158,7 +166,7 @@ export class ActivityTrackerService {
       offset?: number;
       startDate?: Date;
       endDate?: Date;
-    } = {},
+    } = {}
   ): Promise<{ activities: UserActivity[]; total: number }> {
     const queryBuilder = this.activityRepository
       .createQueryBuilder('activity')
@@ -218,7 +226,7 @@ export class ActivityTrackerService {
         }
         return acc;
       },
-      {} as Record<ActivityType, number>,
+      {} as Record<ActivityType, number>
     );
 
     const recentActivities = await this.activityRepository.find({
@@ -239,7 +247,7 @@ export class ActivityTrackerService {
     activityType: ActivityType,
     description: string,
     metadata: ActivityMetadata,
-    request?: AuthenticatedRequest,
+    request?: AuthenticatedRequest
   ): Promise<UserActivity> {
     const activity = this.activityRepository.create({
       userId,
@@ -259,8 +267,8 @@ export class ActivityTrackerService {
     return (
       request.headers['x-forwarded-for']?.toString()?.split(',')[0] ||
       request.headers['x-real-ip']?.toString() ||
-      request.connection?.remoteAddress ||
-      request.socket?.remoteAddress
+      (request as any).connection?.remoteAddress ||
+      (request as any).socket?.remoteAddress
     );
   }
 }

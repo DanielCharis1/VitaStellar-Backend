@@ -18,12 +18,7 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiBearerAuth,
-  ApiOperation,
-  ApiResponse,
-} from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { UsersService } from './users.service';
 import { UserSearchService } from './services/user-search.service';
@@ -72,7 +67,7 @@ export class UsersController {
     private readonly userSearchService: UserSearchService,
     private readonly dataExportService: DataExportService,
     private readonly activityFeedService: ActivityFeedService,
-    private readonly queueService: QueueService,
+    private readonly queueService: QueueService
   ) {}
 
   @Post('data-export')
@@ -89,7 +84,7 @@ export class UsersController {
       DATA_PROCESSING_QUEUE,
       DATA_EXPORT_JOB,
       { userId },
-      { maxRetries: 3 },
+      { maxRetries: 3 }
     );
     return { message: 'Export job queued' };
   }
@@ -100,11 +95,11 @@ export class UsersController {
     new ValidationPipe({
       whitelist: true,
       transform: true,
-    }),
+    })
   )
   async registerDeviceToken(
     @Body() registerDeviceTokenDto: RegisterDeviceTokenDto,
-    @Req() req: AuthenticatedRequest,
+    @Req() req: AuthenticatedRequest
   ) {
     const userId = this.extractUserId(req);
     await this.usersService.registerDeviceToken(userId, registerDeviceTokenDto.token);
@@ -113,11 +108,13 @@ export class UsersController {
 
   @Get('profile')
   @ApiOperation({ summary: 'Get current user profile' })
-  @ApiResponse({ status: 200, description: 'Profile retrieved successfully', type: ProfileResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Profile retrieved successfully',
+    type: ProfileResponseDto,
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async getCurrentProfile(
-    @Req() req: AuthenticatedRequest,
-  ): Promise<ProfileResponseDto> {
+  async getCurrentProfile(@Req() req: AuthenticatedRequest): Promise<ProfileResponseDto> {
     const userId = this.extractUserId(req);
     return this.usersService.getProfile(userId);
   }
@@ -132,12 +129,12 @@ export class UsersController {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-    }),
+    })
   )
   async updateProfile(
     @Body() updateProfileDto: UpdateProfileDto,
     @Req() req: AuthenticatedRequest,
-    userAgent?: string,
+    userAgent?: string
   ): Promise<ProfileResponseDto> {
     const authenticatedUserId = this.extractUserId(req);
     const ipAddress = this.extractIpAddress(req);
@@ -146,27 +143,19 @@ export class UsersController {
       authenticatedUserId,
       updateProfileDto,
       ipAddress,
-      finalUserAgent,
+      finalUserAgent
     );
   }
 
   @Patch('profile')
   @UseGuards(JwtAuthGuard)
-  async updateProfileAlternate(
-    @Req() req: AuthenticatedRequest,
-    @Body() dto: UpdateProfileDto,
-  ) {
-    return this.usersService.updateProfile(
-      req.user?.id || '',
-      dto,
-    );
+  async updateProfileAlternate(@Req() req: AuthenticatedRequest, @Body() dto: UpdateProfileDto) {
+    return this.usersService.updateProfile(req.user?.id || '', dto);
   }
 
   @Post('deactivate')
   @HttpCode(200)
-  async deactivate(
-    @Req() req: AuthenticatedRequest,
-  ): Promise<{ message: string }> {
+  async deactivate(@Req() req: AuthenticatedRequest): Promise<{ message: string }> {
     const userId = this.extractUserId(req);
     await this.usersService.deactivateUser(userId);
     return { message: 'Account successfully deactivated' };
@@ -178,18 +167,11 @@ export class UsersController {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-    }),
+    })
   )
-  async getActivityFeed(
-    @Query() query: ActivityFeedQueryDto,
-    @Req() req: AuthenticatedRequest,
-  ) {
+  async getActivityFeed(@Query() query: ActivityFeedQueryDto, @Req() req: AuthenticatedRequest) {
     const userId = this.extractUserId(req);
-    return this.activityFeedService.getActivityFeed(
-      userId,
-      query.page,
-      query.limit,
-    );
+    return this.activityFeedService.getActivityFeed(userId, query.page, query.limit);
   }
 
   @Get()
@@ -200,12 +182,9 @@ export class UsersController {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-    }),
+    })
   )
-  async findAll(
-    @Query() searchDto: UserSearchDto,
-    @Req() req?: AuthenticatedRequest,
-  ) {
+  async findAll(@Query() searchDto: UserSearchDto, @Req() req?: AuthenticatedRequest) {
     const result = await this.userSearchService.searchUsers(searchDto);
     return {
       data: result.results,

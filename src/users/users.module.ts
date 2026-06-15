@@ -8,10 +8,7 @@ import { Coupon } from './entities/coupon.entity';
 import { WalletModule } from './wallet/wallet.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([User, TaskCompletion, Coupon]),
-    WalletModule,
-  ],
+  imports: [TypeOrmModule.forFeature([User, TaskCompletion, Coupon]), WalletModule],
   controllers: [UsersController],
   providers: [UsersService],
   exports: [UsersService],

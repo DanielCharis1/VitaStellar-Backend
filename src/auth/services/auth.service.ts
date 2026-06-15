@@ -41,11 +41,11 @@ export class AuthService {
   private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutes
   private readonly maxFailedLoginAttempts = parseInt(
     process.env.MAX_FAILED_LOGIN_ATTEMPTS || '5',
-    10,
+    10
   );
   private readonly lockoutDurationMs = parseInt(
     process.env.ACCOUNT_LOCKOUT_DURATION_MS || String(15 * 60 * 1000),
-    10,
+    10
   );
 
   constructor(
@@ -59,7 +59,7 @@ export class AuthService {
     private transactionService: TransactionService,
     @InjectRepository(TokenBlacklist)
     private tokenBlacklistRepo: Repository<TokenBlacklist>,
-    @Optional() private readonly referralService?: ReferralService,
+    @Optional() private readonly referralService?: ReferralService
   ) {
     this.redisClient = createClient({
       url: process.env.REDIS_URL || 'redis://localhost:6379',
@@ -92,7 +92,7 @@ export class AuthService {
         await this.referralService.redeemReferralCode(user.id, dto.referralCode);
       } catch (error) {
         this.logger.warn(
-          `Referral code not applied for user ${user.id}: ${(error as Error).message}`,
+          `Referral code not applied for user ${user.id}: ${(error as Error).message}`
         );
       }
     }
@@ -215,13 +215,19 @@ export class AuthService {
     return { message: 'Two-factor authentication disabled successfully' };
   }
 
-  private async recordFailedLogin(user: { id: string; failedLoginAttempts?: number; lockedUntil?: Date | null }) {
+  private async recordFailedLogin(user: {
+    id: string;
+    failedLoginAttempts?: number;
+    lockedUntil?: Date | null;
+  }) {
     const fullUser = await this.usersService.findById(user.id);
     fullUser.failedLoginAttempts = (fullUser.failedLoginAttempts || 0) + 1;
 
     if (fullUser.failedLoginAttempts >= this.maxFailedLoginAttempts) {
       fullUser.lockedUntil = new Date(Date.now() + this.lockoutDurationMs);
-      this.logger.warn(`Account locked for user ${fullUser.id} until ${fullUser.lockedUntil.toISOString()}`);
+      this.logger.warn(
+        `Account locked for user ${fullUser.id} until ${fullUser.lockedUntil.toISOString()}`
+      );
     }
 
     await this.usersService.save(fullUser);
@@ -327,7 +333,11 @@ export class AuthService {
     let expiresAt = 0;
 
     try {
-      const payload = this.jwtService.verify(refreshToken) as { sub: string; tokenId: string; exp: number };
+      const payload = this.jwtService.verify(refreshToken) as {
+        sub: string;
+        tokenId: string;
+        exp: number;
+      };
       userId = payload.sub;
       tokenId = payload.tokenId;
       expiresAt = payload.exp;
@@ -414,10 +424,12 @@ export class AuthService {
         timestamp: new Date(),
         duration,
       });
-
     } catch (error: any) {
       const duration = Date.now() - startTime;
-      this.logger.error(`Logout failed for user ${userId} after ${duration}ms: ${error.message}`, error.stack);
+      this.logger.error(
+        `Logout failed for user ${userId} after ${duration}ms: ${error.message}`,
+        error.stack
+      );
 
       if (error instanceof UnauthorizedException) {
         throw error;

@@ -15,10 +15,7 @@ import { RewardTransaction } from './entities/reward-transaction.entity';
 import { RewardStatus } from './enums/reward-status.enum';
 import { TaskCompletion } from '../task-completion/entities/task-completion.entity';
 import { HealthTask } from '../entities/health-task.entity';
-import {
-  REWARD_QUEUE,
-  REWARD_DISTRIBUTION_JOB,
-} from '../queue/queue.constants';
+import { REWARD_QUEUE, REWARD_DISTRIBUTION_JOB } from '../queue/queue.constants';
 import { REWARD_MILESTONE_EVENT } from '../coupons/coupon.events';
 
 const XLM_MILESTONES = [10, 25, 50, 100, 250];
@@ -36,7 +33,7 @@ export class RewardService {
     private readonly healthTaskRepository: Repository<HealthTask>,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     @InjectQueue(REWARD_QUEUE) private readonly rewardQueue: Queue,
-    private readonly eventEmitter: EventEmitter2,
+    private readonly eventEmitter: EventEmitter2
   ) {}
 
   @OnEvent('task.verified')
@@ -79,7 +76,7 @@ export class RewardService {
 
   async getRewardHistory(
     userId: string,
-    queryDto: RewardHistoryQueryDto,
+    queryDto: RewardHistoryQueryDto
   ): Promise<RewardHistoryResponseDto> {
     const { page = 1, limit = 20, startDate, endDate, categoryId } = queryDto;
     const skip = (page - 1) * limit;
@@ -88,8 +85,7 @@ export class RewardService {
     const cacheKey = `reward_history:${userId}:${JSON.stringify(queryDto)}`;
 
     // Try to get from cache first
-    const cachedResult =
-      await this.cacheManager.get<RewardHistoryResponseDto>(cacheKey);
+    const cachedResult = await this.cacheManager.get<RewardHistoryResponseDto>(cacheKey);
     if (cachedResult) {
       return cachedResult;
     }
@@ -97,10 +93,7 @@ export class RewardService {
     // Build query with joins
     const queryBuilder = this.rewardTransactionRepository
       .createQueryBuilder('reward_transaction')
-      .leftJoinAndSelect(
-        'reward_transaction.task_completion',
-        'task_completion',
-      )
+      .leftJoinAndSelect('reward_transaction.task_completion', 'task_completion')
       .leftJoinAndSelect('task_completion.health_task', 'health_task')
       .where('reward_transaction.userId = :userId', { userId })
       .orderBy('reward_transaction.createdAt', 'DESC');
@@ -129,27 +122,19 @@ export class RewardService {
     const total = await queryBuilder.getCount();
 
     // Get paginated results
-    const rewardTransactions = await queryBuilder
-      .skip(skip)
-      .take(limit)
-      .getMany();
+    const rewardTransactions = await queryBuilder.skip(skip).take(limit).getMany();
 
     // Transform to DTO format
-    const data: RewardHistoryItemDto[] = rewardTransactions.map(
-      (transaction) => ({
-        id: transaction.id,
-        amount: transaction.amount,
-        status: transaction.status,
-        stellarTxHash:
-          transaction.status === RewardStatus.SUCCESS
-            ? transaction.stellarTxHash
-            : undefined,
-        taskTitle:
-          transaction.task_completion?.health_task?.title || 'Unknown Task',
-        categoryId: transaction.task_completion?.health_task?.categoryId,
-        createdAt: transaction.createdAt,
-      }),
-    );
+    const data: RewardHistoryItemDto[] = rewardTransactions.map((transaction) => ({
+      id: transaction.id,
+      amount: transaction.amount,
+      status: transaction.status,
+      stellarTxHash:
+        transaction.status === RewardStatus.SUCCESS ? transaction.stellarTxHash : undefined,
+      taskTitle: transaction.task_completion?.health_task?.title || 'Unknown Task',
+      categoryId: transaction.task_completion?.health_task?.categoryId,
+      createdAt: transaction.createdAt,
+    }));
 
     const result: RewardHistoryResponseDto = {
       data,
@@ -165,14 +150,8 @@ export class RewardService {
     return result;
   }
 
-  async processRewardJob(
-    completionId: string,
-    userId: string,
-    amount: number,
-  ): Promise<void> {
-    this.logger.log(
-      `Processing reward for user ${userId}, completion ${completionId}`,
-    );
+  async processRewardJob(completionId: string, userId: string, amount: number): Promise<void> {
+    this.logger.log(`Processing reward for user ${userId}, completion ${completionId}`);
 
     let transaction = await this.rewardTransactionRepository.findOne({
       where: { taskCompletionId: completionId },
@@ -200,9 +179,7 @@ export class RewardService {
       transaction.status = RewardStatus.SUCCESS;
       await this.rewardTransactionRepository.save(transaction);
 
-      this.logger.log(
-        `Successfully distributed ${amount} XLM to user ${userId}`,
-      );
+      this.logger.log(`Successfully distributed ${amount} XLM to user ${userId}`);
     } catch (error) {
       transaction.status = RewardStatus.FAILED;
       await this.rewardTransactionRepository.save(transaction);
@@ -220,8 +197,6 @@ export class RewardService {
       await this.rewardTransactionRepository.save(transaction);
     }
 
-    this.logger.error(
-      `Max retries reached for completion ${completionId}. Marking as FAILED.`,
-    );
+    this.logger.error(`Max retries reached for completion ${completionId}. Marking as FAILED.`);
   }
 }

@@ -7,14 +7,14 @@ import { TaskActivity } from '../../../database/entities/task-activity.entity';
 export class ActivityLogService {
   constructor(
     @InjectRepository(TaskActivity)
-    private readonly activityRepository: Repository<TaskActivity>,
+    private readonly activityRepository: Repository<TaskActivity>
   ) {}
 
   async logTaskChange(
     taskId: string,
     changedBy: string,
     changeType: string,
-    details: Record<string, unknown>,
+    details: Record<string, unknown>
   ): Promise<TaskActivity> {
     const entry = this.activityRepository.create({
       taskId,
@@ -26,11 +26,7 @@ export class ActivityLogService {
     return this.activityRepository.save(entry);
   }
 
-  async getActivityHistory(
-    taskId: string,
-    limit = 50,
-    offset = 0,
-  ): Promise<TaskActivity[]> {
+  async getActivityHistory(taskId: string, limit = 50, offset = 0): Promise<TaskActivity[]> {
     return this.activityRepository.find({
       where: { taskId },
       order: { createdAt: 'DESC' },

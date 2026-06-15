@@ -10,13 +10,7 @@ import {
   Post,
   Body,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-  ApiBody,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { NotificationService } from './services/notification.service';
 import { Notification } from './entities/notification.entity';
 
@@ -33,9 +27,7 @@ import { Observable } from 'rxjs';
 
 @Injectable()
 class JwtAuthGuard implements CanActivate {
-  canActivate(
-    context: ExecutionContext,
-  ): boolean | Promise<boolean> | Observable<boolean> {
+  canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
     const request = context.switchToHttp().getRequest();
     request.user = { userId: 'mock-user-id' };
     return true;
@@ -53,8 +45,7 @@ export class NotificationsController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Get notification list',
-    description:
-      'Retrieve all notifications for the currently authenticated user.',
+    description: 'Retrieve all notifications for the currently authenticated user.',
   })
   @ApiResponse({
     status: 200,
@@ -126,7 +117,7 @@ export class NotificationsController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async seedNotification(
     @Req() req: AuthenticatedRequest,
-    @Body() body: { type: string; title: string; body: string },
+    @Body() body: { type: string; title: string; body: string }
   ) {
     return this.notificationService.createNotification({
       userId: req.user.userId,

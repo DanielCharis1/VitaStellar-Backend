@@ -11,7 +11,7 @@ export class TaskSearchService {
     @InjectRepository(HealthTask)
     private readonly taskRepository: Repository<HealthTask>,
     @InjectRepository(SearchHistory)
-    private readonly historyRepository: Repository<SearchHistory>,
+    private readonly historyRepository: Repository<SearchHistory>
   ) {}
 
   async searchTasks(dto: SearchTasksDto, userId: string) {
@@ -20,10 +20,9 @@ export class TaskSearchService {
 
     if (query) {
       // Full-text search (simple ILIKE for demonstration)
-      qb.andWhere(
-        '(task.title ILIKE :query OR task.description ILIKE :query)',
-        { query: `%${query}%` },
-      );
+      qb.andWhere('(task.title ILIKE :query OR task.description ILIKE :query)', {
+        query: `%${query}%`,
+      });
     }
 
     if (filters.category) {

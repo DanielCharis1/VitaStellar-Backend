@@ -21,7 +21,7 @@ export class TasksScheduler {
     private readonly taskAssignmentService: TaskAssignmentService,
     private readonly reminderService: ReminderService,
     private readonly recurringTaskService: RecurringTaskService,
-    private readonly tasksService: TasksService,
+    private readonly tasksService: TasksService
   ) {}
 
   /**
@@ -49,7 +49,9 @@ export class TasksScheduler {
         }
       }
 
-      this.logger.log(`Daily task assignment completed. Processed: ${processedCount}, Errors: ${errorCount}`);
+      this.logger.log(
+        `Daily task assignment completed. Processed: ${processedCount}, Errors: ${errorCount}`
+      );
     } catch (error) {
       this.logger.error(`Daily task assignment cron job failed: ${error.message}`, error.stack);
     }
@@ -112,21 +114,16 @@ export class TasksScheduler {
           await this.tasksService.scheduleReminderJob(task);
           enqueuedCount++;
         } catch (error) {
-          this.logger.error(
-            `Failed to enqueue reminder for task ${task.id}: ${error.message}`,
-          );
+          this.logger.error(`Failed to enqueue reminder for task ${task.id}: ${error.message}`);
           errorCount++;
         }
       }
 
       this.logger.log(
-        `Upcoming reminders processed. Enqueued: ${enqueuedCount}, Errors: ${errorCount}`,
+        `Upcoming reminders processed. Enqueued: ${enqueuedCount}, Errors: ${errorCount}`
       );
     } catch (error) {
-      this.logger.error(
-        `Upcoming reminders cron job failed: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Upcoming reminders cron job failed: ${error.message}`, error.stack);
     }
   }
 
@@ -156,7 +153,7 @@ export class TasksScheduler {
     }
 
     this.logger.log(
-      `Manual task assignment completed. Processed: ${processedCount}, Errors: ${errorCount}`,
+      `Manual task assignment completed. Processed: ${processedCount}, Errors: ${errorCount}`
     );
 
     return { processed: processedCount, errors: errorCount };

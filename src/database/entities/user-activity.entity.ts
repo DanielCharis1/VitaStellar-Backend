@@ -1,5 +1,21 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, Index } from 'typeorm';
-import { IsString, IsEnum, IsUUID, IsOptional, IsObject, IsDateString, Length, Matches } from 'class-validator';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  ManyToOne,
+  Index,
+} from 'typeorm';
+import {
+  IsString,
+  IsEnum,
+  IsUUID,
+  IsOptional,
+  IsObject,
+  IsDateString,
+  Length,
+  Matches,
+} from 'class-validator';
 import { User } from './user.entity';
 
 export enum ActivityType {
@@ -42,7 +58,10 @@ export class UserActivity {
   @Column({ name: 'ip_address', type: 'varchar', length: 45, nullable: true })
   @IsOptional()
   @IsString()
-  @Matches(/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/, { message: 'Invalid IP address format' })
+  @Matches(
+    /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/,
+    { message: 'Invalid IP address format' }
+  )
   ipAddress: string;
 
   @Column({ name: 'user_agent', type: 'text', nullable: true })

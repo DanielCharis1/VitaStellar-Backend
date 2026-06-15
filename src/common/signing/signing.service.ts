@@ -18,13 +18,10 @@ export class SigningService {
     path: string,
     body: string,
     timestamp: number,
-    secret: string,
+    secret: string
   ): string {
     const data = `${method.toUpperCase()}|${path}|${body}|${timestamp}`;
-    return crypto
-      .createHmac('sha256', secret)
-      .update(data)
-      .digest('hex');
+    return crypto.createHmac('sha256', secret).update(data).digest('hex');
   }
 
   /**
@@ -36,7 +33,7 @@ export class SigningService {
     path: string,
     body: any,
     timestamp: number,
-    secret: string,
+    secret: string
   ): boolean {
     const stringifiedBody = body ? JSON.stringify(body) : '';
     const expectedSignature = this.generateSignature(
@@ -44,15 +41,12 @@ export class SigningService {
       path,
       stringifiedBody,
       timestamp,
-      secret,
+      secret
     );
 
     // Constant time comparison to prevent timing attacks
     try {
-      return crypto.timingSafeEqual(
-        Buffer.from(signature),
-        Buffer.from(expectedSignature),
-      );
+      return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature));
     } catch (e) {
       return false;
     }

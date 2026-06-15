@@ -1,18 +1,5 @@
-import {
-  Body,
-  Controller,
-  Post,
-  UseGuards,
-  UsePipes,
-  ValidationPipe,
-} from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiResponse,
-  ApiSecurity,
-  ApiTags,
-} from '@nestjs/swagger';
+import { Body, Controller, Post, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '@/auth/guards/roles.guard';
 import { Roles } from '@/auth/decorators/roles.decorator';
@@ -33,7 +20,7 @@ import {
 export class AdminTasksController {
   constructor(
     private readonly bulkTaskAssignmentService: BulkTaskAssignmentService,
-    private readonly queueService: QueueService,
+    private readonly queueService: QueueService
   ) {}
 
   @Post('bulk-assign')
@@ -48,15 +35,10 @@ export class AdminTasksController {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-    }),
+    })
   )
-  async bulkAssign(
-    @Body() dto: BulkAssignTasksDto,
-  ): Promise<BulkAssignTasksResponseDto> {
-    this.bulkTaskAssignmentService.validateBulkAssignPayload(
-      dto.userIds,
-      dto.taskIds,
-    );
+  async bulkAssign(@Body() dto: BulkAssignTasksDto): Promise<BulkAssignTasksResponseDto> {
+    this.bulkTaskAssignmentService.validateBulkAssignPayload(dto.userIds, dto.taskIds);
 
     const assignedDate = new Date().toISOString().split('T')[0];
     const job = await this.queueService.enqueueBulkTaskAssignment({

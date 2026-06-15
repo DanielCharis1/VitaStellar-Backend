@@ -1,10 +1,4 @@
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  Index,
-} from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, Index } from 'typeorm';
 
 export enum AuditAction {
   CREATE = 'CREATE',
@@ -108,7 +102,7 @@ export class AuditLog {
   @Column({ type: 'jsonb', nullable: true })
   metadata: Record<string, any> | null;
 
-  @CreateDateColumn({ 
+  @CreateDateColumn({
     type: 'timestamp with time zone',
     name: 'created_at',
     precision: 6,

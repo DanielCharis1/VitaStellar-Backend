@@ -1,11 +1,5 @@
 // src/tasks/entities/task-completion.entity.ts
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  ManyToOne,
-  Column,
-  CreateDateColumn,
-} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, ManyToOne, Column, CreateDateColumn } from 'typeorm';
 import { User } from '../../entities/user.entity';
 import { HealthTask } from './health-task.entity';
 

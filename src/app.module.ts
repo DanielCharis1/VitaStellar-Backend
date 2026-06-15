@@ -20,10 +20,10 @@ import { NotificationsModule } from '@modules/notifications/notifications.module
 import { AdminModule } from '@modules/admin/admin.module';
 import { ReportsModule } from '@modules/reports/reports.module';
 // 1. Import the new StorageModule
-import { StorageModule } from './shared/storage/storage.module'; 
+import { StorageModule } from './shared/storage/storage.module';
 import { MetricsModule } from './shared/metrics/metrics.module';
 import { UsageModule } from './modules/usage/usage.module';
-import { MonitoringModule } from './shared/monitoring/monitoring.module'; 
+import { MonitoringModule } from './shared/monitoring/monitoring.module';
 import { CacheModule } from './shared/cache/cache.module';
 
 // Database

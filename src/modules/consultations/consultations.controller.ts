@@ -45,7 +45,10 @@ export class ConsultationsController {
   @ApiOperation({ summary: 'Set healer availability slot' })
   @ApiResponse({ status: 201, description: 'Availability slot created' })
   @ApiResponse({ status: 403, description: 'Healer role required' })
-  async setAvailability(@Request() req: { user: { sub: string } }, @Body() body: SetAvailabilityDto) {
+  async setAvailability(
+    @Request() req: { user: { sub: string } },
+    @Body() body: SetAvailabilityDto
+  ) {
     const startTime = new Date(body.startTime);
     const endTime = new Date(body.endTime);
     return this.consultationsService.setAvailability(req.user.sub, startTime, endTime);
@@ -60,7 +63,7 @@ export class ConsultationsController {
     const result = await this.consultationsService.schedule(
       body.userId,
       scheduledAt,
-      body.healerId,
+      body.healerId
     );
     return result;
   }

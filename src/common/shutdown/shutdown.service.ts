@@ -23,9 +23,11 @@ export class ShutdownService implements OnApplicationShutdown {
     @Optional() @InjectQueue(REWARD_QUEUE) private readonly rewardQueue?: Queue,
     @Optional() @InjectQueue(PROOF_VERIFICATION_QUEUE) private readonly proofQueue?: Queue,
     @Optional() @InjectQueue(NOTIFICATION_QUEUE) private readonly notificationQueue?: Queue,
-    @Optional() @InjectQueue(TASK_VERIFICATION_QUEUE) private readonly taskVerificationQueue?: Queue,
+    @Optional()
+    @InjectQueue(TASK_VERIFICATION_QUEUE)
+    private readonly taskVerificationQueue?: Queue,
     @Optional() @InjectQueue(USER_ACTIVITY_QUEUE) private readonly userActivityQueue?: Queue,
-    @Optional() @InjectQueue(DATA_PROCESSING_QUEUE) private readonly dataProcessingQueue?: Queue,
+    @Optional() @InjectQueue(DATA_PROCESSING_QUEUE) private readonly dataProcessingQueue?: Queue
   ) {}
 
   private async safeCloseQueue(q?: Queue, name?: string) {

@@ -8,7 +8,17 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm';
-import { IsUUID, IsString, IsBoolean, IsNumber, IsOptional, Min, Max, IsDateString, Length } from 'class-validator';
+import {
+  IsUUID,
+  IsString,
+  IsBoolean,
+  IsNumber,
+  IsOptional,
+  Min,
+  Max,
+  IsDateString,
+  Length,
+} from 'class-validator';
 import { User } from '../../entities/user.entity';
 import { HealthTask } from '../../tasks/entities/health-task.entity';
 

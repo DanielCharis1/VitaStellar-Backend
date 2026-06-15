@@ -20,7 +20,7 @@ export class AdminUsersService {
 
   constructor(
     @InjectRepository(User) private usersRepository: Repository<User>,
-    private auditService: AuditService,
+    private auditService: AuditService
   ) {
     this.redisClient = createClient({
       url: process.env.REDIS_URL || 'redis://localhost:6379',
@@ -47,10 +47,7 @@ export class AdminUsersService {
     });
     const savedUser = await this.usersRepository.save(user);
 
-    await this.auditService.logAction(
-      adminId,
-      `Created admin user ${savedUser.id}`,
-    );
+    await this.auditService.logAction(adminId, `Created admin user ${savedUser.id}`);
 
     const { password, ...result } = savedUser as User & { password: string };
     return result;
@@ -63,16 +60,18 @@ export class AdminUsersService {
 
     const qb = this.usersRepository.createQueryBuilder('user');
 
-    if (dto.country)
-      qb.andWhere('user.country = :country', { country: dto.country });
+    if (dto.country) qb.andWhere('user.country = :country', { country: dto.country });
     if (dto.role) qb.andWhere('user.role = :role', { role: dto.role });
     if (dto.isActive !== undefined) {
       qb.andWhere('user.isActive = :active', { active: dto.isActive });
     }
     if (dto.search) {
-      qb.andWhere('(user.firstName ILIKE :search OR user.lastName ILIKE :search OR user.email ILIKE :search)', {
-        search: `%${dto.search}%`,
-      });
+      qb.andWhere(
+        '(user.firstName ILIKE :search OR user.lastName ILIKE :search OR user.email ILIKE :search)',
+        {
+          search: `%${dto.search}%`,
+        }
+      );
     }
 
     qb.select([
@@ -124,23 +123,18 @@ export class AdminUsersService {
   }
 
   async changeRole(adminId: string, userId: string, role: Role) {
-    if (adminId === userId)
-      throw new ForbiddenException('Admins cannot change their own role');
+    if (adminId === userId) throw new ForbiddenException('Admins cannot change their own role');
 
     const user = await this.getUserById(userId);
     user.role = role;
     const updatedUser = await this.usersRepository.save(user);
 
-    await this.auditService.logAction(
-      adminId,
-      `Changed role of user ${userId} to ${role}`,
-    );
+    await this.auditService.logAction(adminId, `Changed role of user ${userId} to ${role}`);
     return updatedUser;
   }
 
   async suspendUser(adminId: string, userId: string) {
-    if (adminId === userId)
-      throw new ForbiddenException('Admins cannot suspend themselves');
+    if (adminId === userId) throw new ForbiddenException('Admins cannot suspend themselves');
 
     const user = await this.getUserById(userId);
     user.isActive = false;
@@ -154,8 +148,7 @@ export class AdminUsersService {
   }
 
   async reactivateUser(adminId: string, userId: string) {
-    if (adminId === userId)
-      throw new ForbiddenException('Admins cannot reactivate themselves');
+    if (adminId === userId) throw new ForbiddenException('Admins cannot reactivate themselves');
 
     const user = await this.usersRepository.findOne({
       where: { id: userId },
@@ -171,8 +164,7 @@ export class AdminUsersService {
   }
 
   async deleteUser(adminId: string, userId: string) {
-    if (adminId === userId)
-      throw new ForbiddenException('Admins cannot delete their own account');
+    if (adminId === userId) throw new ForbiddenException('Admins cannot delete their own account');
 
     const user = await this.getUserById(userId);
     await this.usersRepository.remove(user);
@@ -180,10 +172,7 @@ export class AdminUsersService {
     // Invalidate refresh tokens in Redis
     await this.redisClient.del(`refresh:${userId}`);
 
-    await this.auditService.logAction(
-      adminId,
-      `Deleted user ${userId} (${user.email})`,
-    );
+    await this.auditService.logAction(adminId, `Deleted user ${userId} (${user.email})`);
     return { message: 'User deleted successfully' };
   }
 }

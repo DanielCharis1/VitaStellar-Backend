@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { HealthTask } from '../../../tasks/entities/health-task.entity';
@@ -23,7 +19,7 @@ export class ArchiveService {
   constructor(
     @InjectRepository(HealthTask)
     private readonly taskRepository: Repository<HealthTask>,
-    private readonly activityLogService: ActivityLogService,
+    private readonly activityLogService: ActivityLogService
   ) {}
 
   async archiveTask(taskId: string, archivedBy?: string): Promise<HealthTask> {
@@ -59,7 +55,10 @@ export class ArchiveService {
     return savedTask;
   }
 
-  async getArchivedTasks(page: number = 1, limit: number = 10): Promise<{ data: HealthTask[], total: number }> {
+  async getArchivedTasks(
+    page: number = 1,
+    limit: number = 10
+  ): Promise<{ data: HealthTask[]; total: number }> {
     const qb = this.taskRepository
       .createQueryBuilder('task')
       .where("task.status = 'completed'")
@@ -111,9 +110,7 @@ export class ArchiveService {
     return this.autoArchiveConfig;
   }
 
-  updateAutoArchiveConfig(
-    partialConfig: Partial<AutoArchiveConfig>,
-  ): AutoArchiveConfig {
+  updateAutoArchiveConfig(partialConfig: Partial<AutoArchiveConfig>): AutoArchiveConfig {
     const nextConfig = {
       ...this.autoArchiveConfig,
       ...partialConfig,
@@ -133,14 +130,16 @@ export class ArchiveService {
     }
 
     const thresholdTime = new Date(
-      now.getTime() - this.autoArchiveConfig.olderThanDays * 24 * 60 * 60 * 1000,
+      now.getTime() - this.autoArchiveConfig.olderThanDays * 24 * 60 * 60 * 1000
     );
 
     const candidates = await this.taskRepository
       .createQueryBuilder('task')
       .where("task.status = 'completed'")
       // Not already archived
-      .andWhere("(task.targetProfile->'archive'->>'isArchived' IS NULL OR task.targetProfile->'archive'->>'isArchived' = 'false')")
+      .andWhere(
+        "(task.targetProfile->'archive'->>'isArchived' IS NULL OR task.targetProfile->'archive'->>'isArchived' = 'false')"
+      )
       // Older than threshold
       .andWhere('task.createdAt <= :threshold', { threshold: thresholdTime })
       .getMany();

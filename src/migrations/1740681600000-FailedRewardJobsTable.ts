@@ -74,7 +74,7 @@ export class FailedRewardJobsTable1740681600000 implements MigrationInterface {
             default: 'now()',
           },
         ],
-      }),
+      })
     );
 
     // Foreign key to users table
@@ -85,7 +85,7 @@ export class FailedRewardJobsTable1740681600000 implements MigrationInterface {
         referencedColumnNames: ['id'],
         referencedTableName: 'users',
         onDelete: 'CASCADE',
-      }),
+      })
     );
   }
 

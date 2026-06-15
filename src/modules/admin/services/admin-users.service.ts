@@ -22,7 +22,7 @@ export class AdminUsersService {
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
-    private readonly auditService: AuditService,
+    private readonly auditService: AuditService
   ) {
     this.redisClient = createClient({
       url: process.env.REDIS_URL || 'redis://localhost:6379',
@@ -81,7 +81,7 @@ export class AdminUsersService {
     if (dto.search) {
       qb.andWhere(
         '(user.firstName ILIKE :search OR user.lastName ILIKE :search OR user.email ILIKE :search)',
-        { search: `%${dto.search}%` },
+        { search: `%${dto.search}%` }
       );
     }
 

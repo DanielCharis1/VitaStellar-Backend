@@ -40,10 +40,14 @@ export class PushNotificationService implements OnModuleInit {
         this.logger.log('FCM successfully initialized with in-memory service account credentials.');
       } else {
         // Fallback for local development or testing when no FCM credentials are present
-        this.logger.warn('No Firebase credentials provided. FCM push notification service is running in mock/offline mode.');
+        this.logger.warn(
+          'No Firebase credentials provided. FCM push notification service is running in mock/offline mode.'
+        );
       }
     } catch (error: any) {
-      this.logger.error(`FCM initialization failed: ${error.message}. Running in offline/mock mode.`);
+      this.logger.error(
+        `FCM initialization failed: ${error.message}. Running in offline/mock mode.`
+      );
     }
   }
 
@@ -55,18 +59,22 @@ export class PushNotificationService implements OnModuleInit {
     token: string,
     title: string,
     body: string,
-    data: Record<string, string> = {},
+    data: Record<string, string> = {}
   ): Promise<boolean> {
     if (!token) {
       this.logger.warn('FCM token is empty, skipping push notification');
       return false;
     }
 
-    this.logger.log(`Attempting to send push notification via FCM to token: ${token.substring(0, 10)}...`);
+    this.logger.log(
+      `Attempting to send push notification via FCM to token: ${token.substring(0, 10)}...`
+    );
 
     if (!this.firebaseApp) {
       // Mock mode
-      this.logger.log(`[MOCK FCM] Push notification sent to token: ${token} - Title: ${title}, Body: ${body}`);
+      this.logger.log(
+        `[MOCK FCM] Push notification sent to token: ${token} - Title: ${title}, Body: ${body}`
+      );
       return true;
     }
 
@@ -82,7 +90,9 @@ export class PushNotificationService implements OnModuleInit {
       this.logger.log(`FCM push notification sent successfully, messageId: ${response}`);
       return true;
     } catch (error: any) {
-      this.logger.error(`FCM push notification delivery failed for token ${token}: ${error.message}`);
+      this.logger.error(
+        `FCM push notification delivery failed for token ${token}: ${error.message}`
+      );
       // Failed pushes are logged and don't break the notification flow (returns false instead of throwing)
       return false;
     }

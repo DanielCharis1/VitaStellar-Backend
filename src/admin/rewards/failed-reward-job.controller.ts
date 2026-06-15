@@ -1,19 +1,5 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Param,
-  Query,
-  UseGuards,
-  ParseUUIDPipe,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-  ApiSecurity,
-} from '@nestjs/swagger';
+import { Controller, Get, Post, Param, Query, UseGuards, ParseUUIDPipe } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiSecurity } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
@@ -47,9 +33,7 @@ export class FailedRewardJobController {
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden - requires ADMIN role' })
-  async listFailedJobs(
-    @Query() query: ListFailedJobsDto,
-  ): Promise<ListFailedJobsResponseDto> {
+  async listFailedJobs(@Query() query: ListFailedJobsDto): Promise<ListFailedJobsResponseDto> {
     return this.failedRewardJobService.listFailedJobs(query);
   }
 
@@ -68,7 +52,7 @@ export class FailedRewardJobController {
   @ApiResponse({ status: 403, description: 'Forbidden - requires ADMIN role' })
   @ApiResponse({ status: 404, description: 'Failed job not found' })
   async replayFailedJob(
-    @Param('id', ParseUUIDPipe) id: string,
+    @Param('id', ParseUUIDPipe) id: string
   ): Promise<ReplayFailedJobResponseDto> {
     return this.failedRewardJobService.replayFailedJob(id);
   }

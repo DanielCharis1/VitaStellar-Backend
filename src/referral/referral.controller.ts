@@ -1,19 +1,5 @@
-import {
-  Body,
-  Controller,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Post,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ReferralService } from './referral.service';
 import { RedeemReferralDto } from './dto/redeem-referral.dto';
@@ -42,7 +28,7 @@ export class ReferralController {
   @ApiResponse({ status: 409, description: 'Already redeemed' })
   async redeem(
     @Req() req: { user: { id?: string; sub?: string } },
-    @Body() dto: RedeemReferralDto,
+    @Body() dto: RedeemReferralDto
   ) {
     const userId = req.user.id ?? req.user.sub;
     return this.referralService.redeemReferralCode(userId!, dto.referralCode);

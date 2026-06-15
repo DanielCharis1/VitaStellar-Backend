@@ -64,11 +64,7 @@ export class AdminUsersController {
   @Patch(':id/role')
   @ApiOperation({ summary: 'Change user role' })
   @ApiResponse({ status: 200, description: 'Role updated successfully' })
-  async changeRole(
-    @Req() req: any,
-    @Param('id') id: string,
-    @Body() dto: ChangeRoleDto,
-  ) {
+  async changeRole(@Req() req: any, @Param('id') id: string, @Body() dto: ChangeRoleDto) {
     return this.adminUsersService.changeRole(req.user.sub, id, dto.role);
   }
 
