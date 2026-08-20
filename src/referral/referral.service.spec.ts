@@ -125,9 +125,35 @@ describe('ReferralService', () => {
           userId: 'referrer',
           xlmAmount: 1,
         }),
+        expect.objectContaining({
+          jobId: 'referral-reward:referrer:referred',
+        }),
       );
       expect(mockReferralRepo.save).toHaveBeenCalledWith(
         expect.objectContaining({ rewardPaid: true }),
+      );
+    });
+
+    it('passes null completionId when no real completion exists', async () => {
+      mockUserRepo.findOne.mockResolvedValue({
+        id: 'referred',
+        referredBy: { id: 'referrer' },
+      });
+      mockReferralRepo.findOne.mockResolvedValue(null);
+      mockReferralRepo.save.mockImplementation((r) => Promise.resolve(r));
+
+      await service.handleFirstHealthTaskCompletion({
+        userId: 'referred',
+      });
+
+      expect(mockRewardQueue.add).toHaveBeenCalledWith(
+        REWARD_DISTRIBUTION_JOB,
+        expect.objectContaining({
+          completionId: null,
+          userId: 'referrer',
+          xlmAmount: 1,
+        }),
+        expect.anything(),
       );
     });
 
