@@ -157,6 +157,15 @@ export class RewardService {
       where: { taskCompletionId: completionId },
     });
 
+    // Idempotency guard: if this completion has already been paid, do nothing.
+    // This prevents duplicate payouts from Bull retries or at-least-once delivery.
+    if (transaction && transaction.status === RewardStatus.SUCCESS) {
+      this.logger.warn(
+        `Reward for completion ${completionId} already succeeded (tx ${transaction.id}); skipping duplicate job`,
+      );
+      return;
+    }
+
     if (!transaction) {
       transaction = this.rewardTransactionRepository.create({
         user: { id: userId } as any,
