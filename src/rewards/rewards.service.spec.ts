@@ -6,8 +6,10 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { RewardService } from './reward.service';
 import { RewardTransaction } from './entities/reward-transaction.entity';
 import { RewardStatus } from './enums/reward-status.enum';
-import { TaskCompletion } from '../task-completion/entities/task-completion.entity';
+import { TaskCompletion } from '../tasks/entities/task-completion.entity';
 import { HealthTask } from '../entities/health-task.entity';
+import { User } from '../entities/user.entity';
+import { StellarService } from '../stellar/stellar.service';
 import {
   REWARD_QUEUE,
   REWARD_DISTRIBUTION_JOB,
@@ -40,6 +42,14 @@ describe('RewardService', () => {
   const mockTaskCompletionRepo = {};
   const mockHealthTaskRepo = {};
 
+  const mockUserRepo = {
+    findOne: jest.fn(),
+  };
+
+  const mockStellarService = {
+    sendPayment: jest.fn(),
+  };
+
   const mockCacheManager = {
     get: jest.fn(),
     set: jest.fn(),
@@ -63,9 +73,11 @@ describe('RewardService', () => {
         { provide: getRepositoryToken(RewardTransaction), useValue: mockRewardTransactionRepo },
         { provide: getRepositoryToken(TaskCompletion), useValue: mockTaskCompletionRepo },
         { provide: getRepositoryToken(HealthTask), useValue: mockHealthTaskRepo },
+        { provide: getRepositoryToken(User), useValue: mockUserRepo },
         { provide: CACHE_MANAGER, useValue: mockCacheManager },
         { provide: getQueueToken(REWARD_QUEUE), useValue: mockRewardQueue },
         { provide: EventEmitter2, useValue: mockEventEmitter },
+        { provide: StellarService, useValue: mockStellarService },
       ],
     }).compile();
 
@@ -377,6 +389,21 @@ describe('RewardService', () => {
   // ──────────────────────────────────────────────────────────────────────────
 
   describe('processRewardJob', () => {
+    const baseUser = {
+      id: 'user-1',
+      stellarWalletAddress: 'GDESTINATION123',
+      walletAddress: null,
+    };
+
+    beforeEach(() => {
+      mockUserRepo.findOne.mockResolvedValue(baseUser);
+      mockStellarService.sendPayment.mockResolvedValue({
+        stellarTxHash: 'real_stellar_hash_abc',
+        amount: '3.0000000',
+        destination: 'GDESTINATION123',
+      });
+    });
+
     it('should create a new transaction when none exists for the completion', async () => {
       mockRewardTransactionRepo.findOne.mockResolvedValue(null);
       const created = {
@@ -415,7 +442,7 @@ describe('RewardService', () => {
       expect(existing.attempts).toBe(2);
     });
 
-    it('should set status to SUCCESS and assign stellarTxHash on success', async () => {
+    it('should set status to SUCCESS and record real stellarTxHash on success', async () => {
       const transaction = {
         attempts: 0,
         status: RewardStatus.PENDING,
@@ -428,7 +455,77 @@ describe('RewardService', () => {
       await service.processRewardJob('comp-1', 'user-1', 1.5);
 
       expect(transaction.status).toBe(RewardStatus.SUCCESS);
-      expect(transaction.stellarTxHash).toMatch(/^dummy_stellar_tx_hash_\d+$/);
+      expect(transaction.stellarTxHash).toBe('real_stellar_hash_abc');
+      expect(mockStellarService.sendPayment).toHaveBeenCalledWith('GDESTINATION123', 1.5);
+    });
+
+    it('should return early when transaction is already SUCCESS (idempotency)', async () => {
+      const completed = {
+        id: 'tx-done',
+        attempts: 1,
+        status: RewardStatus.SUCCESS,
+        stellarTxHash: 'existing_hash',
+      };
+      mockRewardTransactionRepo.findOne.mockResolvedValue(completed);
+
+      await service.processRewardJob('comp-1', 'user-1', 3.0);
+
+      expect(mockStellarService.sendPayment).not.toHaveBeenCalled();
+      expect(mockRewardTransactionRepo.save).not.toHaveBeenCalled();
+    });
+
+    it('should set status to FAILED and throw when Stellar submission fails', async () => {
+      const transaction = {
+        attempts: 0,
+        status: RewardStatus.PENDING,
+        stellarTxHash: null,
+      };
+      mockRewardTransactionRepo.findOne.mockResolvedValue(null);
+      mockRewardTransactionRepo.create.mockReturnValue(transaction);
+      mockRewardTransactionRepo.save.mockResolvedValue(transaction);
+      mockStellarService.sendPayment.mockRejectedValue(new Error('network error'));
+
+      await expect(
+        service.processRewardJob('comp-1', 'user-1', 1.0),
+      ).rejects.toThrow('network error');
+
+      expect(transaction.status).toBe(RewardStatus.FAILED);
+    });
+
+    it('should throw when user has no linked wallet address', async () => {
+      const noWalletUser = { id: 'user-1', stellarWalletAddress: null, walletAddress: null };
+      mockUserRepo.findOne.mockResolvedValue(noWalletUser);
+
+      const transaction = {
+        attempts: 0,
+        status: RewardStatus.PENDING,
+        stellarTxHash: null,
+      };
+      mockRewardTransactionRepo.findOne.mockResolvedValue(null);
+      mockRewardTransactionRepo.create.mockReturnValue(transaction);
+      mockRewardTransactionRepo.save.mockResolvedValue(transaction);
+
+      await expect(
+        service.processRewardJob('comp-1', 'user-1', 1.0),
+      ).rejects.toThrow('no linked Stellar wallet');
+    });
+
+    it('should create referral reward with null taskCompletionId', async () => {
+      mockRewardTransactionRepo.findOne.mockResolvedValue(null);
+      const created = {
+        attempts: 0,
+        status: RewardStatus.PENDING,
+      };
+      mockRewardTransactionRepo.create.mockReturnValue(created);
+      mockRewardTransactionRepo.save.mockResolvedValue(created);
+
+      await service.processRewardJob(null as any, 'user-1', 1.0);
+
+      expect(mockRewardTransactionRepo.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          task_completion: null,
+        }),
+      );
     });
 
     it('should increment attempts on each call', async () => {
@@ -441,16 +538,54 @@ describe('RewardService', () => {
       expect(transaction.attempts).toBe(3);
     });
 
-    it('should save transaction twice: once on creation and once on success', async () => {
-      const transaction = { attempts: 0, status: RewardStatus.PENDING };
-      mockRewardTransactionRepo.findOne.mockResolvedValue(null);
-      mockRewardTransactionRepo.create.mockReturnValue(transaction);
-      mockRewardTransactionRepo.save.mockResolvedValue(transaction);
+    it('should return early without acting when transaction is already SUCCESS (idempotency)', async () => {
+      const completedTransaction = {
+        id: 'tx-done',
+        attempts: 1,
+        status: RewardStatus.SUCCESS,
+        stellarTxHash: 'existing_hash',
+      };
+      mockRewardTransactionRepo.findOne.mockResolvedValue(completedTransaction);
 
-      await service.processRewardJob('comp-1', 'user-1', 2.0);
+      await service.processRewardJob('comp-1', 'user-1', 3.0);
 
-      // First save: initial creation, second save: status update
-      expect(mockRewardTransactionRepo.save).toHaveBeenCalledTimes(2);
+      // Should NOT save anything — the job is rejected as a duplicate
+      expect(mockRewardTransactionRepo.save).not.toHaveBeenCalled();
+      expect(mockRewardTransactionRepo.create).not.toHaveBeenCalled();
+    });
+
+    it('should NOT return early when transaction exists but status is PENDING', async () => {
+      const pendingTransaction = {
+        id: 'tx-pending',
+        attempts: 0,
+        status: RewardStatus.PENDING,
+        stellarTxHash: null,
+      };
+      mockRewardTransactionRepo.findOne.mockResolvedValue(pendingTransaction);
+      mockRewardTransactionRepo.save.mockResolvedValue(pendingTransaction);
+
+      await service.processRewardJob('comp-1', 'user-1', 3.0);
+
+      // Should continue processing — only SUCCESS is blocked
+      expect(pendingTransaction.attempts).toBe(1);
+      expect(mockRewardTransactionRepo.save).toHaveBeenCalled();
+    });
+
+    it('should NOT return early when transaction exists but status is FAILED (allow retry)', async () => {
+      const failedTransaction = {
+        id: 'tx-failed',
+        attempts: 3,
+        status: RewardStatus.FAILED,
+        stellarTxHash: null,
+      };
+      mockRewardTransactionRepo.findOne.mockResolvedValue(failedTransaction);
+      mockRewardTransactionRepo.save.mockResolvedValue(failedTransaction);
+
+      await service.processRewardJob('comp-1', 'user-1', 3.0);
+
+      // Should continue processing — only SUCCESS is blocked
+      expect(failedTransaction.attempts).toBe(4);
+      expect(mockRewardTransactionRepo.save).toHaveBeenCalled();
     });
   });
 

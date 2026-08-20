@@ -120,13 +120,19 @@ export class ReferralService {
 
     if (record.rewardPaid) return;
 
-    const completionId = payload.completionId ?? `referral-first-task:${userId}`;
+    // Referral rewards have no task completion, so pass null.
+    // A deterministic jobId prevents Bull from enqueueing duplicates.
+    const jobId = `referral-reward:${user.referredBy.id}:${userId}`;
 
-    await this.rewardQueue.add(REWARD_DISTRIBUTION_JOB, {
-      completionId,
-      userId: user.referredBy.id,
-      xlmAmount: REFERRAL_REWARD_XLM,
-    });
+    await this.rewardQueue.add(
+      REWARD_DISTRIBUTION_JOB,
+      {
+        completionId: payload.completionId ?? null,
+        userId: user.referredBy.id,
+        xlmAmount: REFERRAL_REWARD_XLM,
+      },
+      { jobId },
+    );
 
     record.rewardPaid = true;
     record.rewardPaidAt = new Date();

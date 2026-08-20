@@ -26,6 +26,7 @@ import { UsersService } from '../../auth/services/users.service';
 import { DatabaseModule } from '../../database/database.module';
 import { ReferralModule } from '../../referral/referral.module';
 import { PasswordValidationPipe } from '../../common/pipes/password-validation.pipe';
+import { TokenRevocationService } from '../../auth/services/token-revocation.service';
 
 @Module({
   imports: [
@@ -59,6 +60,7 @@ import { PasswordValidationPipe } from '../../common/pipes/password-validation.p
     JwtRefreshGuard,
     RolesGuard,
     PasswordValidationPipe,
+    TokenRevocationService,
   ],
   exports: [
     AuthService,

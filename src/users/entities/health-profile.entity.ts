@@ -9,7 +9,7 @@ import {
   BeforeUpdate,
 } from 'typeorm';
 import * as crypto from 'crypto';
-import { User } from './user.entity';
+import { User } from '../../entities/user.entity';
 
 const AES_KEY = process.env.AES_KEY || '32charslongsecretkeymustbesecure!'; // 32 chars for AES-256
 const IV_LENGTH = 16;

@@ -29,8 +29,6 @@ export class TaskCompletionService {
     private completionRepo: Repository<TaskCompletion>,
     @InjectRepository(HealthTask)
     private taskRepo: Repository<HealthTask>,
-    @InjectQueue(REWARD_QUEUE)
-    private rewardQueue: Queue,
     @InjectQueue(PROOF_VERIFICATION_QUEUE)
     private proofVerificationQueue: Queue,
     private eventEmitter: EventEmitter2
@@ -110,14 +108,7 @@ export class TaskCompletionService {
       });
     }
 
-    // 6. Enqueue XLM reward distribution
-    await this.rewardQueue.add(REWARD_DISTRIBUTION_JOB, {
-      completionId: saved.id,
-      userId,
-      xlmAmount: Number(task.xlmReward),
-    });
-
-    // 7. Return response with estimated XLM arrival time
+    // 6. Return response with estimated XLM arrival time
     const estimatedXlmArrival = new Date(Date.now() + ESTIMATED_QUEUE_DELAY_MS);
 
     return {

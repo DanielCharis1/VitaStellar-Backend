@@ -13,10 +13,13 @@ import {
 } from './dto/reward-history.dto';
 import { RewardTransaction } from './entities/reward-transaction.entity';
 import { RewardStatus } from './enums/reward-status.enum';
-import { TaskCompletion } from '../task-completion/entities/task-completion.entity';
+import { TaskCompletion } from '../tasks/entities/task-completion.entity';
 import { HealthTask } from '../entities/health-task.entity';
+import { User } from '../entities/user.entity';
+import { StellarService } from '../stellar/stellar.service';
 import { REWARD_QUEUE, REWARD_DISTRIBUTION_JOB } from '../queue/queue.constants';
 import { REWARD_MILESTONE_EVENT } from '../coupons/coupon.events';
+import { UserMilestone, MilestoneType } from './entities/user-milestone.entity';
 
 const XLM_MILESTONES = [10, 25, 50, 100, 250];
 
@@ -31,9 +34,12 @@ export class RewardService {
     private readonly taskCompletionRepository: Repository<TaskCompletion>,
     @InjectRepository(HealthTask)
     private readonly healthTaskRepository: Repository<HealthTask>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     @InjectQueue(REWARD_QUEUE) private readonly rewardQueue: Queue,
-    private readonly eventEmitter: EventEmitter2
+    private readonly eventEmitter: EventEmitter2,
+    private readonly stellarService: StellarService
   ) {}
 
   @OnEvent('task.verified')
@@ -52,7 +58,8 @@ export class RewardService {
 
   /**
    * Call after recording a new reward (e.g. from reward distribution job).
-   * Emits reward.milestone when user's total XLM crosses a threshold; coupon service listens and creates coupons.
+   * Emits reward.milestone when user's total XLM crosses a NEW threshold;
+   * each threshold is emitted at most once per user via the user_milestones ledger.
    */
   async emitMilestoneIfReached(userId: string): Promise<void> {
     const result = await this.rewardTransactionRepository
@@ -63,13 +70,33 @@ export class RewardService {
       .getRawOne<{ sum: string }>();
 
     const totalXlm = parseFloat(result?.sum ?? '0');
+
+    // Load already-awarded XLM milestones for this user
+    const awarded = await this.userMilestoneRepository.find({
+      where: { userId, milestoneType: MilestoneType.XLM },
+    });
+    const awardedValues = new Set(awarded.map((m) => m.milestoneValue));
+
     for (const milestone of XLM_MILESTONES) {
-      if (totalXlm >= milestone) {
+      if (totalXlm >= milestone && !awardedValues.has(milestone)) {
+        // Persist the milestone award before emitting to prevent duplicates on retry
+        await this.userMilestoneRepository.save(
+          this.userMilestoneRepository.create({
+            userId,
+            milestoneType: MilestoneType.XLM,
+            milestoneValue: milestone,
+          })
+        );
+
         this.eventEmitter.emit(REWARD_MILESTONE_EVENT, {
           userId,
           totalXlm,
           milestoneReached: milestone,
         });
+
+        this.logger.log(
+          `Emitted ${REWARD_MILESTONE_EVENT} for user ${userId}: ${milestone} XLM`
+        );
       }
     }
   }
@@ -131,8 +158,8 @@ export class RewardService {
       status: transaction.status,
       stellarTxHash:
         transaction.status === RewardStatus.SUCCESS ? transaction.stellarTxHash : undefined,
-      taskTitle: transaction.task_completion?.health_task?.title || 'Unknown Task',
-      categoryId: transaction.task_completion?.health_task?.categoryId,
+      taskTitle: transaction.task_completion?.task?.title || 'Unknown Task',
+      categoryId: transaction.task_completion?.task?.categoryId,
       createdAt: transaction.createdAt,
     }));
 
@@ -153,14 +180,36 @@ export class RewardService {
   async processRewardJob(completionId: string, userId: string, amount: number): Promise<void> {
     this.logger.log(`Processing reward for user ${userId}, completion ${completionId}`);
 
-    let transaction = await this.rewardTransactionRepository.findOne({
-      where: { taskCompletionId: completionId },
-    });
+    let transaction: RewardTransaction | null = null;
+
+    if (completionId) {
+      transaction = await this.rewardTransactionRepository.findOne({
+        where: { taskCompletionId: completionId },
+      });
+    }
+
+    // Idempotency guard: if this completion has already been paid, do nothing.
+    // This prevents duplicate payouts from Bull retries or at-least-once delivery.
+    if (transaction && transaction.status === RewardStatus.SUCCESS) {
+      this.logger.warn(
+        `Reward for completion ${completionId} already succeeded (tx ${transaction.id}); skipping duplicate job`,
+      );
+      return;
+    }
+
+    // Idempotency guard: if this completion has already been paid, do nothing.
+    // This prevents duplicate payouts from Bull retries or at-least-once delivery.
+    if (transaction && transaction.status === RewardStatus.SUCCESS) {
+      this.logger.warn(
+        `Reward for completion ${completionId} already succeeded (tx ${transaction.id}); skipping duplicate job`,
+      );
+      return;
+    }
 
     if (!transaction) {
       transaction = this.rewardTransactionRepository.create({
         user: { id: userId } as any,
-        task_completion: { id: completionId } as any,
+        task_completion: completionId ? ({ id: completionId } as any) : null,
         amount,
         status: RewardStatus.PENDING,
         attempts: 0,
@@ -170,16 +219,32 @@ export class RewardService {
 
     transaction.attempts += 1;
 
-    try {
-      // Logic for Stellar Service transfer would go here
-      // i.e const txHash = await this.stellarService.transferXlm(userId, amount);
-      const txHash = 'dummy_stellar_tx_hash_' + Date.now(); // Mock hash for now
+    // Look up the user's linked Stellar wallet address
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new Error(`User ${userId} not found for reward payout`);
+    }
 
-      transaction.stellarTxHash = txHash;
+    const walletAddress = user.stellarWalletAddress || user.walletAddress;
+    if (!walletAddress) {
+      this.logger.warn(
+        `User ${userId} has no linked Stellar wallet; marking reward PENDING for later retry`,
+      );
+      throw new Error(
+        `User ${userId} has no linked Stellar wallet address; cannot complete payout`,
+      );
+    }
+
+    try {
+      const result = await this.stellarService.sendPayment(walletAddress, amount);
+
+      transaction.stellarTxHash = result.stellarTxHash;
       transaction.status = RewardStatus.SUCCESS;
       await this.rewardTransactionRepository.save(transaction);
 
-      this.logger.log(`Successfully distributed ${amount} XLM to user ${userId}`);
+      this.logger.log(
+        `Successfully distributed ${amount} XLM to user ${userId} (tx: ${result.stellarTxHash})`,
+      );
     } catch (error) {
       transaction.status = RewardStatus.FAILED;
       await this.rewardTransactionRepository.save(transaction);

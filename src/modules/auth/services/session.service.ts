@@ -41,14 +41,15 @@ export class SessionService {
     return true;
   }
 
-  async revokeAllSessions(userId: string) {
+  async revokeAllSessions(userId: string): Promise<string[]> {
     const sessions = await this.repo.find({ where: { user: { id: userId }, isActive: true } });
-    if (sessions.length === 0) return 0;
+    if (sessions.length === 0) return [];
+    const tokenIds = sessions.map((s) => s.tokenId);
     for (const s of sessions) {
       s.isActive = false;
     }
     await this.repo.save(sessions);
-    return sessions.length;
+    return tokenIds;
   }
 
   async touchSession(tokenId: string) {
