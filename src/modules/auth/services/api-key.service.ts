@@ -11,7 +11,7 @@ export class ApiKeyService {
     private readonly apiKeyRepository: Repository<ApiKey>
   ) {}
 
-  async generateApiKey(userId: number, scopes: string[] = []): Promise<ApiKey> {
+  async generateApiKey(userId: string, scopes: string[] = []): Promise<ApiKey> {
     const key = crypto.randomBytes(32).toString('hex');
     const apiKey = this.apiKeyRepository.create({
       key,
@@ -26,7 +26,7 @@ export class ApiKeyService {
     return apiKey || null;
   }
 
-  async revokeApiKey(id: number): Promise<void> {
+  async revokeApiKey(id: string): Promise<void> {
     const apiKey = await this.apiKeyRepository.findOne({ where: { id } });
     if (!apiKey) {
       throw new NotFoundException('API Key not found');
@@ -36,7 +36,7 @@ export class ApiKeyService {
     await this.apiKeyRepository.save(apiKey);
   }
 
-  async getApiKeysByUser(userId: number): Promise<ApiKey[]> {
+  async getApiKeysByUser(userId: string): Promise<ApiKey[]> {
     return this.apiKeyRepository.find({ where: { userId } });
   }
 

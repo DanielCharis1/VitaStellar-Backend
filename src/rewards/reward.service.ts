@@ -13,7 +13,7 @@ import {
 } from './dto/reward-history.dto';
 import { RewardTransaction } from './entities/reward-transaction.entity';
 import { RewardStatus } from './enums/reward-status.enum';
-import { TaskCompletion } from '../task-completion/entities/task-completion.entity';
+import { TaskCompletion } from '../tasks/entities/task-completion.entity';
 import { HealthTask } from '../entities/health-task.entity';
 import { REWARD_QUEUE, REWARD_DISTRIBUTION_JOB } from '../queue/queue.constants';
 import { REWARD_MILESTONE_EVENT } from '../coupons/coupon.events';
@@ -131,8 +131,8 @@ export class RewardService {
       status: transaction.status,
       stellarTxHash:
         transaction.status === RewardStatus.SUCCESS ? transaction.stellarTxHash : undefined,
-      taskTitle: transaction.task_completion?.health_task?.title || 'Unknown Task',
-      categoryId: transaction.task_completion?.health_task?.categoryId,
+      taskTitle: transaction.task_completion?.task?.title || 'Unknown Task',
+      categoryId: transaction.task_completion?.task?.categoryId,
       createdAt: transaction.createdAt,
     }));
 

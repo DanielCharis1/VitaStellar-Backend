@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { AdminUsersService } from './admin-users.service';
-import { User } from '../../users/entities/user.entity';
+import { User } from '../../entities/user.entity';
 
 const mockQueryBuilder = {
   andWhere: jest.fn().mockReturnThis(),

@@ -7,18 +7,18 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { User } from './user.entity';
+import { User } from '../../entities/user.entity';
 
 @Entity('api_keys')
 export class ApiKey {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column({ unique: true, length: 64 })
   key: string;
 
   @Column()
-  userId: number;
+  userId: string;
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'userId' })
