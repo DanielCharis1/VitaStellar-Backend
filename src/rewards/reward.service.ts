@@ -155,8 +155,8 @@ export class RewardService {
       status: transaction.status,
       stellarTxHash:
         transaction.status === RewardStatus.SUCCESS ? transaction.stellarTxHash : undefined,
-      taskTitle: transaction.task_completion?.health_task?.title || 'Unknown Task',
-      categoryId: transaction.task_completion?.health_task?.categoryId,
+      taskTitle: transaction.task_completion?.task?.title || 'Unknown Task',
+      categoryId: transaction.task_completion?.task?.categoryId,
       createdAt: transaction.createdAt,
     }));
 
@@ -180,6 +180,15 @@ export class RewardService {
     let transaction = await this.rewardTransactionRepository.findOne({
       where: { taskCompletionId: completionId },
     });
+
+    // Idempotency guard: if this completion has already been paid, do nothing.
+    // This prevents duplicate payouts from Bull retries or at-least-once delivery.
+    if (transaction && transaction.status === RewardStatus.SUCCESS) {
+      this.logger.warn(
+        `Reward for completion ${completionId} already succeeded (tx ${transaction.id}); skipping duplicate job`,
+      );
+      return;
+    }
 
     if (!transaction) {
       transaction = this.rewardTransactionRepository.create({

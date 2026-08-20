@@ -67,6 +67,14 @@ export class TwoFactorService {
 
     record.enabled = true;
     await this.twoFactorRepository.save(record);
+
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (user) {
+      user.twoFactorEnabled = true;
+      user.twoFactorSecret = record.secret;
+      await this.userRepository.save(user);
+    }
+
     return { message: 'Two-factor authentication enabled successfully' };
   }
 
@@ -82,6 +90,14 @@ export class TwoFactorService {
 
     record.enabled = false;
     await this.twoFactorRepository.save(record);
+
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (user) {
+      user.twoFactorEnabled = false;
+      user.twoFactorSecret = null;
+      await this.userRepository.save(user);
+    }
+
     return { message: 'Two-factor authentication disabled successfully' };
   }
 

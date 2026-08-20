@@ -32,6 +32,7 @@ import { SessionService } from '@/modules/auth/services/session.service';
 import { TokenBlacklist } from '@/database/entities/token-blacklist.entity';
 import { TransactionService } from '@/database/services/transaction.service';
 import { ReferralService } from '../../referral/referral.service';
+import { TokenRevocationService } from './token-revocation.service';
 
 @Injectable()
 export class AuthService {
@@ -59,6 +60,7 @@ export class AuthService {
     private transactionService: TransactionService,
     @InjectRepository(TokenBlacklist)
     private tokenBlacklistRepo: Repository<TokenBlacklist>,
+    private readonly tokenRevocationService: TokenRevocationService,
     @Optional() private readonly referralService?: ReferralService
   ) {
     this.redisClient = createClient({
@@ -298,7 +300,7 @@ export class AuthService {
     const tokenId = crypto.randomUUID();
     const refreshExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
-    const accessToken = this.jwtService.sign({ sub: userId, email, role }, { expiresIn: '15m' });
+    const accessToken = this.jwtService.sign({ sub: userId, email, role, tokenId }, { expiresIn: '15m' });
     const refreshToken = this.jwtService.sign(
       { sub: userId, email, role, tokenId },
       { expiresIn: '7d' }
@@ -384,6 +386,9 @@ export class AuthService {
           } else {
             this.logger.warn(`No active session found for tokenId: ${tokenId}`);
           }
+
+          // Revoke the access token immediately via Redis
+          await this.tokenRevocationService.revokeAccessToken(tokenId);
         },
         {
           isolationLevel: 'READ COMMITTED',
@@ -437,6 +442,14 @@ export class AuthService {
 
       throw new InternalServerErrorException('Logout operation failed');
     }
+  }
+
+  async revokeAllUserSessions(userId: string): Promise<number> {
+    const tokenIds = await this.sessionService.revokeAllSessions(userId);
+    if (tokenIds.length > 0) {
+      await this.tokenRevocationService.revokeAccessTokens(tokenIds);
+    }
+    return tokenIds.length;
   }
 
   private async isTokenBlacklisted(token: string): Promise<boolean> {
@@ -542,6 +555,18 @@ export class AuthService {
     // Type Guard to reassure TypeScript compiler that 'user' is guaranteed to exist
     if (!user) {
       throw new UnauthorizedException('Authentication failed: User profile mapping failed.');
+    }
+
+    if (user.twoFactorEnabled) {
+      // twoFactorSecret is `select: false` on the entity; fetch it explicitly
+      const fullUser = await this.usersService.findById(user.id);
+      if (!fullUser.twoFactorSecret) {
+        this.logger.error(`User ${user.id} has twoFactorEnabled but no secret stored`);
+        throw new InternalServerErrorException('Two-factor configuration is incomplete');
+      }
+      if (!verifyOtpDto.totpCode || !authenticator.check(verifyOtpDto.totpCode, fullUser.twoFactorSecret)) {
+        throw new UnauthorizedException('Invalid two-factor authentication code');
+      }
     }
 
     // Update last login timestamp tracking on successful phone OTP validation

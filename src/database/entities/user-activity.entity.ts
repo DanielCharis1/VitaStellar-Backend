@@ -16,7 +16,7 @@ import {
   Length,
   Matches,
 } from 'class-validator';
-import { User } from './user.entity';
+import { User } from '../../entities/user.entity';
 
 export enum ActivityType {
   LOGIN = 'LOGIN',
