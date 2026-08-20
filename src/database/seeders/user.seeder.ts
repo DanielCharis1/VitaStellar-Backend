@@ -2,7 +2,7 @@ import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { Logger } from '@nestjs/common';
 import { BaseSeeder } from './base.seeder';
-import { User } from '../../users/entities/user.entity';
+import { User } from '../../entities/user.entity';
 import { Role } from '../../users/enums/role.enum';
 
 interface UserData {
@@ -99,8 +99,9 @@ export class UserSeeder extends BaseSeeder {
       // Create user
       const user = userRepository.create({
         email: userData.email,
-        passwordHash: hashedPassword,
-        fullName: userData.fullName,
+        password: hashedPassword,
+        firstName: userData.fullName?.split(' ')[0] || 'User',
+        lastName: userData.fullName?.split(' ').slice(1).join(' ') || '',
         role: userData.role,
         country: userData.country,
         phoneNumber: userData.phoneNumber,
