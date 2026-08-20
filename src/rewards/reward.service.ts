@@ -13,12 +13,13 @@ import {
 } from './dto/reward-history.dto';
 import { RewardTransaction } from './entities/reward-transaction.entity';
 import { RewardStatus } from './enums/reward-status.enum';
-import { TaskCompletion } from '../task-completion/entities/task-completion.entity';
+import { TaskCompletion } from '../tasks/entities/task-completion.entity';
 import { HealthTask } from '../entities/health-task.entity';
 import { User } from '../entities/user.entity';
 import { StellarService } from '../stellar/stellar.service';
 import { REWARD_QUEUE, REWARD_DISTRIBUTION_JOB } from '../queue/queue.constants';
 import { REWARD_MILESTONE_EVENT } from '../coupons/coupon.events';
+import { UserMilestone, MilestoneType } from './entities/user-milestone.entity';
 
 const XLM_MILESTONES = [10, 25, 50, 100, 250];
 
@@ -57,7 +58,8 @@ export class RewardService {
 
   /**
    * Call after recording a new reward (e.g. from reward distribution job).
-   * Emits reward.milestone when user's total XLM crosses a threshold; coupon service listens and creates coupons.
+   * Emits reward.milestone when user's total XLM crosses a NEW threshold;
+   * each threshold is emitted at most once per user via the user_milestones ledger.
    */
   async emitMilestoneIfReached(userId: string): Promise<void> {
     const result = await this.rewardTransactionRepository
@@ -68,13 +70,33 @@ export class RewardService {
       .getRawOne<{ sum: string }>();
 
     const totalXlm = parseFloat(result?.sum ?? '0');
+
+    // Load already-awarded XLM milestones for this user
+    const awarded = await this.userMilestoneRepository.find({
+      where: { userId, milestoneType: MilestoneType.XLM },
+    });
+    const awardedValues = new Set(awarded.map((m) => m.milestoneValue));
+
     for (const milestone of XLM_MILESTONES) {
-      if (totalXlm >= milestone) {
+      if (totalXlm >= milestone && !awardedValues.has(milestone)) {
+        // Persist the milestone award before emitting to prevent duplicates on retry
+        await this.userMilestoneRepository.save(
+          this.userMilestoneRepository.create({
+            userId,
+            milestoneType: MilestoneType.XLM,
+            milestoneValue: milestone,
+          })
+        );
+
         this.eventEmitter.emit(REWARD_MILESTONE_EVENT, {
           userId,
           totalXlm,
           milestoneReached: milestone,
         });
+
+        this.logger.log(
+          `Emitted ${REWARD_MILESTONE_EVENT} for user ${userId}: ${milestone} XLM`
+        );
       }
     }
   }
@@ -136,8 +158,8 @@ export class RewardService {
       status: transaction.status,
       stellarTxHash:
         transaction.status === RewardStatus.SUCCESS ? transaction.stellarTxHash : undefined,
-      taskTitle: transaction.task_completion?.health_task?.title || 'Unknown Task',
-      categoryId: transaction.task_completion?.health_task?.categoryId,
+      taskTitle: transaction.task_completion?.task?.title || 'Unknown Task',
+      categoryId: transaction.task_completion?.task?.categoryId,
       createdAt: transaction.createdAt,
     }));
 
@@ -164,6 +186,15 @@ export class RewardService {
       transaction = await this.rewardTransactionRepository.findOne({
         where: { taskCompletionId: completionId },
       });
+    }
+
+    // Idempotency guard: if this completion has already been paid, do nothing.
+    // This prevents duplicate payouts from Bull retries or at-least-once delivery.
+    if (transaction && transaction.status === RewardStatus.SUCCESS) {
+      this.logger.warn(
+        `Reward for completion ${completionId} already succeeded (tx ${transaction.id}); skipping duplicate job`,
+      );
+      return;
     }
 
     // Idempotency guard: if this completion has already been paid, do nothing.

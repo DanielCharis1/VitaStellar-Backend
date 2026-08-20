@@ -6,7 +6,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { RewardService } from './reward.service';
 import { RewardTransaction } from './entities/reward-transaction.entity';
 import { RewardStatus } from './enums/reward-status.enum';
-import { TaskCompletion } from '../task-completion/entities/task-completion.entity';
+import { TaskCompletion } from '../tasks/entities/task-completion.entity';
 import { HealthTask } from '../entities/health-task.entity';
 import { User } from '../entities/user.entity';
 import { StellarService } from '../stellar/stellar.service';
@@ -536,6 +536,56 @@ describe('RewardService', () => {
       await service.processRewardJob('comp-1', 'user-1', 1.0);
 
       expect(transaction.attempts).toBe(3);
+    });
+
+    it('should return early without acting when transaction is already SUCCESS (idempotency)', async () => {
+      const completedTransaction = {
+        id: 'tx-done',
+        attempts: 1,
+        status: RewardStatus.SUCCESS,
+        stellarTxHash: 'existing_hash',
+      };
+      mockRewardTransactionRepo.findOne.mockResolvedValue(completedTransaction);
+
+      await service.processRewardJob('comp-1', 'user-1', 3.0);
+
+      // Should NOT save anything — the job is rejected as a duplicate
+      expect(mockRewardTransactionRepo.save).not.toHaveBeenCalled();
+      expect(mockRewardTransactionRepo.create).not.toHaveBeenCalled();
+    });
+
+    it('should NOT return early when transaction exists but status is PENDING', async () => {
+      const pendingTransaction = {
+        id: 'tx-pending',
+        attempts: 0,
+        status: RewardStatus.PENDING,
+        stellarTxHash: null,
+      };
+      mockRewardTransactionRepo.findOne.mockResolvedValue(pendingTransaction);
+      mockRewardTransactionRepo.save.mockResolvedValue(pendingTransaction);
+
+      await service.processRewardJob('comp-1', 'user-1', 3.0);
+
+      // Should continue processing — only SUCCESS is blocked
+      expect(pendingTransaction.attempts).toBe(1);
+      expect(mockRewardTransactionRepo.save).toHaveBeenCalled();
+    });
+
+    it('should NOT return early when transaction exists but status is FAILED (allow retry)', async () => {
+      const failedTransaction = {
+        id: 'tx-failed',
+        attempts: 3,
+        status: RewardStatus.FAILED,
+        stellarTxHash: null,
+      };
+      mockRewardTransactionRepo.findOne.mockResolvedValue(failedTransaction);
+      mockRewardTransactionRepo.save.mockResolvedValue(failedTransaction);
+
+      await service.processRewardJob('comp-1', 'user-1', 3.0);
+
+      // Should continue processing — only SUCCESS is blocked
+      expect(failedTransaction.attempts).toBe(4);
+      expect(mockRewardTransactionRepo.save).toHaveBeenCalled();
     });
   });
 
