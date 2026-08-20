@@ -544,6 +544,18 @@ export class AuthService {
       throw new UnauthorizedException('Authentication failed: User profile mapping failed.');
     }
 
+    if (user.twoFactorEnabled) {
+      // twoFactorSecret is `select: false` on the entity; fetch it explicitly
+      const fullUser = await this.usersService.findById(user.id);
+      if (!fullUser.twoFactorSecret) {
+        this.logger.error(`User ${user.id} has twoFactorEnabled but no secret stored`);
+        throw new InternalServerErrorException('Two-factor configuration is incomplete');
+      }
+      if (!verifyOtpDto.totpCode || !authenticator.check(verifyOtpDto.totpCode, fullUser.twoFactorSecret)) {
+        throw new UnauthorizedException('Invalid two-factor authentication code');
+      }
+    }
+
     // Update last login timestamp tracking on successful phone OTP validation
     await this.usersService.updateLastLogin(user.id);
 
