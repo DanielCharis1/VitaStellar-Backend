@@ -16,6 +16,7 @@ import {
   REWARD_QUEUE,
   PROOF_VERIFICATION_QUEUE,
   REWARD_DISTRIBUTION_JOB,
+  VERIFY_PROOF_JOB,
 } from '../../queue/queue.constants';
 
 // Estimated queue processing time in milliseconds
@@ -96,7 +97,7 @@ export class TaskCompletionService {
     } else if (dto.proofType === ProofType.PHOTO) {
       // Queue proof verification
       await this.proofVerificationQueue.add(
-        'verify-proof',
+        VERIFY_PROOF_JOB,
         { completionId: saved.id },
         { attempts: 3, backoff: { type: 'exponential', delay: 2000 } }
       );

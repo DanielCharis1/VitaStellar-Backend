@@ -95,10 +95,21 @@ export class ProofVerificationService {
   }
 
   private extractFileKeyFromUrl(url: string): string {
-    // Assuming the proofUrl is something like https://bucket.s3.amazonaws.com/proofs/user/task/timestamp
-    // Extract the key after the bucket
+    // Handle local-mode URLs: /api/storage/local-upload?key=proofs%2Fuser%2Ftask%2Fts
+    if (url.includes('/api/storage/local-upload')) {
+      const parsed = new URL(url, 'http://localhost');
+      const key = parsed.searchParams.get('key');
+      if (key) return decodeURIComponent(key);
+    }
+
+    // Handle S3 URLs: https://bucket.s3.amazonaws.com/proofs/user/task/timestamp?...
     const urlParts = url.split('/');
     const keyIndex = urlParts.findIndex((part) => part.includes('proofs'));
-    return urlParts.slice(keyIndex).join('/');
+    if (keyIndex === -1) {
+      throw new Error(`Cannot extract file key from URL: ${url}`);
+    }
+    // Strip query string from the last segment
+    const lastSegment = urlParts[urlParts.length - 1].split('?')[0];
+    return [...urlParts.slice(keyIndex, -1), lastSegment].join('/');
   }
 }
