@@ -12,7 +12,12 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TaskCompletion, TaskCompletionStatus } from '../entities/task-completion.entity';
 import { HealthTask } from '../entities/health-task.entity';
 import { CompleteTaskDto, ProofType } from './dto/complete-task.dto';
-import { PROOF_VERIFICATION_QUEUE } from '../../queue/queue.constants';
+import {
+  REWARD_QUEUE,
+  PROOF_VERIFICATION_QUEUE,
+  REWARD_DISTRIBUTION_JOB,
+  VERIFY_PROOF_JOB,
+} from '../../queue/queue.constants';
 
 // Estimated queue processing time in milliseconds
 const ESTIMATED_QUEUE_DELAY_MS = 5 * 60 * 1000; // 5 minutes
@@ -90,7 +95,7 @@ export class TaskCompletionService {
     } else if (dto.proofType === ProofType.PHOTO) {
       // Queue proof verification
       await this.proofVerificationQueue.add(
-        'verify-proof',
+        VERIFY_PROOF_JOB,
         { completionId: saved.id },
         { attempts: 3, backoff: { type: 'exponential', delay: 2000 } }
       );

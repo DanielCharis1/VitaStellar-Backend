@@ -1,7 +1,7 @@
-import { Processor } from '@nestjs/bull';
+import { Processor, Process } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { Job } from 'bull';
-import { PROOF_VERIFICATION_QUEUE } from '../../../queue/queue.constants';
+import { PROOF_VERIFICATION_QUEUE, VERIFY_PROOF_JOB } from '../../../queue/queue.constants';
 import { ProofVerificationService } from './proof-verification.service';
 
 @Processor(PROOF_VERIFICATION_QUEUE)
@@ -10,7 +10,8 @@ export class ProofVerificationProcessor {
 
   constructor(private proofVerificationService: ProofVerificationService) {}
 
-  async process(job: Job): Promise<void> {
+  @Process(VERIFY_PROOF_JOB)
+  async handleVerifyProof(job: Job): Promise<void> {
     const { completionId } = job.data;
 
     this.logger.log(`Processing proof verification for completion ${completionId}`);
@@ -23,4 +24,3 @@ export class ProofVerificationProcessor {
     }
   }
 }
-

@@ -35,6 +35,9 @@ export const TASK_COMPLETION_VERIFICATION_JOB = 'task-completion-verification' a
 export const TASK_QUALITY_CHECK_JOB = 'task-quality-check' as const;
 export const TASK_APPROVAL_JOB = 'task-approval' as const;
 
+// Queue Job Types for Proof Verification Queue
+export const VERIFY_PROOF_JOB = 'verify-proof' as const;
+
 // Queue Job Types for Data Processing Queue
 export const USER_DATA_EXPORT_JOB = 'user-data-export' as const;
 export const BULK_TASK_ASSIGNMENT_JOB = 'bulk-task-assignment' as const;
