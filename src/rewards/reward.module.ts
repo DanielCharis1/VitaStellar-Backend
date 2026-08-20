@@ -4,6 +4,7 @@ import { RewardController } from './reward.controller';
 import { RewardService } from './reward.service';
 import { RewardTransaction } from './entities/reward-transaction.entity';
 import { FailedRewardJob } from './entities/failed-reward-job.entity';
+import { UserMilestone } from './entities/user-milestone.entity';
 import { TaskCompletion } from '../tasks/entities/task-completion.entity';
 import { HealthTask } from '../entities/health-task.entity';
 import { CacheModule } from '@nestjs/cache-manager';
@@ -22,6 +23,7 @@ import { BadgeModule } from './badges/badge.module';
     TypeOrmModule.forFeature([
       RewardTransaction,
       FailedRewardJob,
+      UserMilestone,
       TaskCompletion,
       HealthTask,
       User,
