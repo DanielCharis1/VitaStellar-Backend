@@ -17,6 +17,7 @@ import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { AuditModule } from '../audit/audit.module';
+import { TokenRevocationService } from './services/token-revocation.service';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { AuditModule } from '../audit/audit.module';
     JwtRefreshStrategy,
     JwtAuthGuard,
     JwtRefreshGuard,
+    TokenRevocationService,
   ],
   exports: [AuthService, UsersService, PasswordService, JwtTokenService, ApiKeyService],
 })
