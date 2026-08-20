@@ -175,15 +175,10 @@ export class StreaksService {
   }
 
   private emitMilestoneEvent(userId: string, milestoneDays: number) {
-    this.logger.log(`Emitting milestone event for user ${userId} at ${milestoneDays} days.`);
+    this.logger.log(`Emitting streak milestone event for user ${userId} at ${milestoneDays} days.`);
     this.eventEmitter.emit('streak.milestone', {
       userId,
       milestoneDays,
-    });
-    // Also emit reward event for existing milestone reward handling
-    this.eventEmitter.emit('reward.milestone', {
-      userId,
-      milestoneReached: milestoneDays,
     });
   }
 
