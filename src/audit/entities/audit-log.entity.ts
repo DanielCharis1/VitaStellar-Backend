@@ -34,13 +34,13 @@ export class AuditLog {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'user_id', nullable: true })
+  @Column({ name: 'user_id', type: 'varchar', length: 255, nullable: true })
   userId: string | null;
 
-  @Column({ name: 'user_email', nullable: true })
+  @Column({ name: 'user_email', type: 'varchar', length: 255, nullable: true })
   userEmail: string | null;
 
-  @Column({ name: 'user_role', nullable: true })
+  @Column({ name: 'user_role', type: 'varchar', length: 50, nullable: true })
   userRole: string | null;
 
   @Column({
@@ -57,10 +57,10 @@ export class AuditLog {
   })
   resourceType: AuditResource;
 
-  @Column({ name: 'resource_id', nullable: true })
+  @Column({ name: 'resource_id', type: 'varchar', length: 255, nullable: true })
   resourceId: string | null;
 
-  @Column({ name: 'resource_name', nullable: true })
+  @Column({ name: 'resource_name', type: 'varchar', length: 255, nullable: true })
   resourceName: string | null;
 
   @Column({ type: 'jsonb', nullable: true })
