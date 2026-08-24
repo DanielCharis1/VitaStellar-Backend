@@ -13,12 +13,14 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ForbiddenException } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 import { UserStatsDto } from './dto/user-stats.dto';
 import { ErrorResponseDto } from './dto/error-response.dto';
 import { IsString, IsNotEmpty } from 'class-validator';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 export class RegisterDeviceTokenDto {
   @IsString()
@@ -26,30 +28,15 @@ export class RegisterDeviceTokenDto {
   token: string;
 }
 
-// JWT Auth Guard - will be implemented when JWT is added
-// For now, we'll use a mock guard interface
+// The user object is populated by JwtStrategy.validate(), which returns
+// { sub, email, role } for an authenticated bearer token.
 interface AuthenticatedRequest extends Request {
-  user: {
-    userId: string;
+  user?: {
+    sub?: string;
+    userId?: string;
     email?: string;
-    phoneNumber?: string;
+    role?: string;
   };
-}
-
-// Mock JWT Guard - replace with actual JwtAuthGuard when JWT is implemented
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
-import { Observable } from 'rxjs';
-
-@Injectable()
-class JwtAuthGuard implements CanActivate {
-  canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
-    // JWT verification performed by Passport strategy at the guard level
-    // The user object is populated by JwtStrategy.validate()
-    const request = context.switchToHttp().getRequest();
-    // Mock user for testing - in production, this comes from JWT token
-    request.user = { userId: 'mock-user-id' };
-    return true;
-  }
 }
 
 @ApiTags('Users')
@@ -80,7 +67,10 @@ export class UsersController {
     @Body() registerDeviceTokenDto: RegisterDeviceTokenDto,
     @Req() req: AuthenticatedRequest
   ) {
-    await this.usersService.registerDeviceToken(req.user.userId, registerDeviceTokenDto.token);
+    await this.usersService.registerDeviceToken(
+      this.extractUserId(req),
+      registerDeviceTokenDto.token
+    );
     return { success: true, message: 'Device token registered successfully' };
   }
 
@@ -121,7 +111,7 @@ export class UsersController {
     type: ErrorResponseDto,
   })
   async getProfile(@Req() req: AuthenticatedRequest): Promise<UserResponseDto> {
-    return this.usersService.getProfile(req.user.userId);
+    return this.usersService.getProfile(this.extractUserId(req));
   }
 
   @Get('me/stats')
@@ -157,7 +147,7 @@ export class UsersController {
     type: ErrorResponseDto,
   })
   async getStats(@Req() req: AuthenticatedRequest): Promise<UserStatsDto> {
-    return this.usersService.getStats(req.user.userId);
+    return this.usersService.getStats(this.extractUserId(req));
   }
 
   @Patch('me')
@@ -208,7 +198,7 @@ export class UsersController {
     @Req() req: AuthenticatedRequest,
     @Body() updateProfileDto: UpdateProfileDto
   ): Promise<UserResponseDto> {
-    return this.usersService.updateProfile(req.user.userId, updateProfileDto);
+    return this.usersService.updateProfile(this.extractUserId(req), updateProfileDto);
   }
 
   @Patch('profile')
@@ -232,7 +222,7 @@ export class UsersController {
     @Req() req: AuthenticatedRequest,
     @Body() updateProfileDto: UpdateProfileDto
   ): Promise<UserResponseDto> {
-    return this.usersService.updateProfile(req.user.userId, updateProfileDto);
+    return this.usersService.updateProfile(this.extractUserId(req), updateProfileDto);
   }
 
   @Delete('me')
@@ -272,6 +262,14 @@ export class UsersController {
     type: ErrorResponseDto,
   })
   async deleteProfile(@Req() req: AuthenticatedRequest): Promise<void> {
-    await this.usersService.softDelete(req.user.userId);
+    await this.usersService.softDelete(this.extractUserId(req));
+  }
+
+  private extractUserId(req: AuthenticatedRequest): string {
+    const userId = req.user?.sub ?? req.user?.userId;
+    if (!userId) {
+      throw new ForbiddenException('Authenticated user context is missing');
+    }
+    return userId;
   }
 }
