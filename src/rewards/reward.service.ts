@@ -36,6 +36,8 @@ export class RewardService {
     private readonly healthTaskRepository: Repository<HealthTask>,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(UserMilestone)
+    private readonly userMilestoneRepository: Repository<UserMilestone>,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     @InjectQueue(REWARD_QUEUE) private readonly rewardQueue: Queue,
     private readonly eventEmitter: EventEmitter2,
