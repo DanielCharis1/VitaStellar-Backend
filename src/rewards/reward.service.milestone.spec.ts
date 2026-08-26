@@ -30,7 +30,8 @@ describe('RewardService - Milestone Deduplication', () => {
       mockRewardRepo,
       null, // taskCompletionRepo
       null, // healthTaskRepo
-      mockMilestoneRepo,
+      mockMilestoneRepo, // userMilestoneRepo
+      null, // userRepo
       null, // cacheManager
       null, // rewardQueue
       mockEventEmitter,

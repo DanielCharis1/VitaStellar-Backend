@@ -26,6 +26,7 @@ import { TransactionService } from '../../database/services/transaction.service'
 import { TokenBlacklist } from '../../database/entities/token-blacklist.entity';
 import { AccountLockedException } from '../../auth/exceptions/account-locked.exception';
 import { Role } from '../../auth/enums/role.enum';
+import { TokenRevocationService } from '../../auth/services/token-revocation.service';
 
 const mockRedisClient = {
   connect: jest.fn(),
@@ -53,6 +54,7 @@ describe('AuthService', () => {
     create: jest.fn(),
     getProfile: jest.fn(),
     canUserLogin: jest.fn(),
+    updateLastLogin: jest.fn(),
     save: jest.fn(),
   };
 
@@ -64,6 +66,11 @@ describe('AuthService', () => {
   const mockSessionService = { createSession: jest.fn(), revokeSession: jest.fn() };
   const mockTransactionService = { execute: jest.fn() };
   const mockTokenBlacklistRepository = { save: jest.fn(), findOne: jest.fn(), delete: jest.fn() };
+  const mockTokenRevocationService = {
+    revokeAccessToken: jest.fn(),
+    revokeAccessTokens: jest.fn(),
+    isAccessTokenRevoked: jest.fn(),
+  };
 
   const baseUser = {
     id: 'user-1',
@@ -95,6 +102,7 @@ describe('AuthService', () => {
         { provide: SessionService, useValue: mockSessionService },
         { provide: TransactionService, useValue: mockTransactionService },
         { provide: getRepositoryToken(TokenBlacklist), useValue: mockTokenBlacklistRepository },
+        { provide: TokenRevocationService, useValue: mockTokenRevocationService },
       ],
     }).compile();
 
@@ -204,12 +212,13 @@ describe('AuthService', () => {
       mockJwtService.verify.mockReturnValue({ sub: userId, tokenId });
       mockTokenBlacklistRepository.findOne.mockResolvedValue(null);
       mockRedisClient.get.mockResolvedValue(refreshToken);
-      const user = {
+      // Return a fresh object per call so the rotation write is not clobbered by the
+      // token-persist write performed by generateTokens on the same mock instance.
+      mockUsersService.findById.mockImplementation(async () => ({
         ...baseUser,
         refreshToken: 'hashed',
         refreshTokenExpiry: new Date(Date.now() + 86400000),
-      };
-      mockUsersService.findById.mockResolvedValue(user);
+      }));
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
       mockRedisClient.del.mockResolvedValue(1);
       mockUsersService.save.mockImplementation(async (u) => u);
@@ -269,6 +278,79 @@ describe('AuthService', () => {
       expect(result.secret).toBeDefined();
       expect(result.qrCode).toContain('data:image');
       expect(result.enabled).toBe(false);
+      expect(mockUsersService.save).toHaveBeenCalledWith(
+        expect.objectContaining({ twoFactorSecret: result.secret, twoFactorEnabled: false }),
+      );
+    });
+
+    it('enableTwoFactor confirms with the persisted secret and enables 2FA', async () => {
+      const secret = authenticator.generateSecret();
+      const code = authenticator.generate(secret);
+      mockUsersService.findById.mockResolvedValue({
+        ...baseUser,
+        twoFactorSecret: secret,
+      });
+      mockUsersService.save.mockImplementation(async (u) => u);
+
+      const result = await authService.enableTwoFactor(baseUser.id, code);
+
+      expect(result.enabled).toBe(true);
+      expect(mockUsersService.save).toHaveBeenCalledWith(
+        expect.objectContaining({ twoFactorEnabled: true, twoFactorSecret: secret }),
+      );
+    });
+
+    it('enableTwoFactor rejects a code from another secret and leaves 2FA disabled', async () => {
+      const persistedSecret = authenticator.generateSecret();
+      const wrongCode = authenticator.generate(authenticator.generateSecret());
+      mockUsersService.findById.mockResolvedValue({
+        ...baseUser,
+        twoFactorSecret: persistedSecret,
+      });
+      mockUsersService.save.mockImplementation(async (u) => u);
+
+      await expect(authService.enableTwoFactor(baseUser.id, wrongCode)).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(mockUsersService.save).not.toHaveBeenCalledWith(
+        expect.objectContaining({ twoFactorEnabled: true }),
+      );
+    });
+
+    it('enableTwoFactor throws when confirming without a prior setup', async () => {
+      mockUsersService.findById.mockResolvedValue({ ...baseUser, twoFactorSecret: null });
+      mockUsersService.save.mockImplementation(async (u) => u);
+      const strayCode = authenticator.generate(authenticator.generateSecret());
+
+      await expect(authService.enableTwoFactor(baseUser.id, strayCode)).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(mockUsersService.save).not.toHaveBeenCalled();
+    });
+
+    it('re-running setup rotates the secret and the old code no longer confirms', async () => {
+      mockUsersService.findById.mockResolvedValue({ ...baseUser });
+      mockUsersService.save.mockImplementation(async (u) => u);
+
+      const first = await authService.enableTwoFactor(baseUser.id);
+      const second = await authService.enableTwoFactor(baseUser.id);
+
+      expect(second.secret).toBeDefined();
+      expect(second.secret).not.toBe(first.secret);
+
+      // A code minted from the old (first) secret must be rejected against the rotated secret
+      const oldCode = authenticator.generate(first.secret);
+      mockUsersService.findById.mockResolvedValue({
+        ...baseUser,
+        twoFactorSecret: second.secret,
+      });
+
+      await expect(authService.enableTwoFactor(baseUser.id, oldCode)).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(mockUsersService.save).not.toHaveBeenCalledWith(
+        expect.objectContaining({ twoFactorEnabled: true }),
+      );
     });
 
     it('disableTwoFactor disables 2FA after valid verification', async () => {

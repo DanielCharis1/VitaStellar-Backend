@@ -3,6 +3,83 @@
  */
 
 export class PhoneValidationUtil {
+  // Country-specific patterns, keyed by ISO country code. Each pattern starts
+  // with the international dialing prefix for that country.
+  private static readonly countryPatterns: { [key: string]: string } = {
+    US: '^1[2-9]\\d{9}$', // US: +1 followed by 10 digits
+    GB: '^44[2-9]\\d{8,9}$', // UK: +44 followed by 9-10 digits
+    CA: '^1[2-9]\\d{9}$', // Canada: +1 followed by 10 digits
+    AU: '^61[2-9]\\d{8}$', // Australia: +61 followed by 9 digits
+    DE: '^49[1-9]\\d{8,11}$', // Germany: +49 followed by 9-12 digits
+    FR: '^33[1-9]\\d{8}$', // France: +33 followed by 9 digits
+    IT: '^39[3-9]\\d{8,10}$', // Italy: +39 followed by 9-11 digits
+    ES: '^34[6-9]\\d{8}$', // Spain: +34 followed by 9 digits
+    NL: '^31[6-9]\\d{8}$', // Netherlands: +31 followed by 9 digits
+    BE: '^32[4-9]\\d{7,8}$', // Belgium: +32 followed by 8-9 digits
+    CH: '^41[7-9]\\d{8}$', // Switzerland: +41 followed by 9 digits
+    AT: '^43[6-9]\\d{8,11}$', // Austria: +43 followed by 9-12 digits
+    SE: '^46[7-9]\\d{8}$', // Sweden: +46 followed by 9 digits
+    NO: '^47[4-9]\\d{7}$', // Norway: +47 followed by 8 digits
+    DK: '^45[2-9]\\d{7}$', // Denmark: +45 followed by 8 digits
+    FI: '^358[4-9]\\d{8}$', // Finland: +358 followed by 9 digits
+    IE: '^353[8-9]\\d{7,8}$', // Ireland: +353 followed by 8-9 digits
+    PT: '^351[9][1236]\\d{7}$', // Portugal: +351 followed by 9 digits
+    GR: '^30[2-9]\\d{9}$', // Greece: +30 followed by 10 digits
+    TR: '^90[5]\\d{9}$', // Turkey: +90 followed by 10 digits
+    IL: '^972[5]\\d{8}$', // Israel: +972 followed by 9 digits
+    SA: '^966[5]\\d{8}$', // Saudi Arabia: +966 followed by 9 digits
+    AE: '^971[5]\\d{8}$', // UAE: +971 followed by 9 digits
+    IN: '^91[6-9]\\d{9}$', // India: +91 followed by 10 digits
+    PK: '^92[3]\\d{9}$', // Pakistan: +92 followed by 10 digits
+    BD: '^880[1-9]\\d{9}$', // Bangladesh: +880 followed by 10 digits
+    LK: '^94[7]\\d{8}$', // Sri Lanka: +94 followed by 9 digits
+    NP: '^977[9]\\d{8}$', // Nepal: +977 followed by 9 digits
+    TH: '^66[8-9]\\d{8}$', // Thailand: +66 followed by 9 digits
+    VN: '^84[3-9]\\d{8}$', // Vietnam: +84 followed by 9 digits
+    MY: '^60[1-9]\\d{8,9}$', // Malaysia: +60 followed by 9-10 digits
+    SG: '^65[6-9]\\d{7}$', // Singapore: +65 followed by 8 digits
+    PH: '^63[9]\\d{9}$', // Philippines: +63 followed by 10 digits
+    ID: '^62[8]\\d{9,11}$', // Indonesia: +62 followed by 10-12 digits
+    JP: '^81[7-9]\\d{8}$', // Japan: +81 followed by 9 digits
+    KR: '^82[1-9]\\d{8,9}$', // South Korea: +82 followed by 9-10 digits
+    CN: '^86[1-9]\\d{10}$', // China: +86 followed by 11 digits
+    HK: '^852[5-9]\\d{7}$', // Hong Kong: +852 followed by 8 digits
+    TW: '^886[9]\\d{8}$', // Taiwan: +886 followed by 9 digits
+    NZ: '^64[2-9]\\d{7,9}$', // New Zealand: +64 followed by 8-10 digits
+    ZA: '^27[6-8]\\d{8}$', // South Africa: +27 followed by 9 digits
+    EG: '^20[1-9]\\d{9}$', // Egypt: +20 followed by 10 digits
+    NG: '^234[7-9]\\d{8}$', // Nigeria: +234 followed by 10 digits
+    KE: '^254[7]\\d{8}$', // Kenya: +254 followed by 9 digits
+    GH: '^233[2-9]\\d{8}$', // Ghana: +233 followed by 9 digits
+    UG: '^256[3-9]\\d{8}$', // Uganda: +256 followed by 9 digits
+    TZ: '^255[6-7]\\d{8}$', // Tanzania: +255 followed by 9 digits
+    MX: '^52[1-9]\\d{9}$', // Mexico: +52 followed by 10 digits
+    BR: '^55[1-9]\\d{9,10}$', // Brazil: +55 followed by 10-11 digits
+    AR: '^54[9]\\d{8}$', // Argentina: +54 followed by 10 digits
+    CL: '^56[9]\\d{8}$', // Chile: +56 followed by 9 digits
+    CO: '^57[3]\\d{9}$', // Colombia: +57 followed by 10 digits
+    PE: '^51[9]\\d{8}$', // Peru: +51 followed by 9 digits
+    VE: '^58[4]\\d{9}$', // Venezuela: +58 followed by 10 digits
+    RU: '^7[9]\\d{9}$', // Russia: +7 followed by 10 digits
+    UA: '^380[3-9]\\d{8}$', // Ukraine: +380 followed by 9 digits
+    BY: '^375[2-9]\\d{8}$', // Belarus: +375 followed by 9 digits
+    KZ: '^7[6-7]\\d{9}$', // Kazakhstan: +7 followed by 10 digits
+    UZ: '^998[9]\\d{8}$', // Uzbekistan: +998 followed by 9 digits
+    AM: '^374[3-9]\\d{7}$', // Armenia: +374 followed by 8 digits
+    AZ: '^994[4-9]\\d{8}$', // Azerbaijan: +994 followed by 9 digits
+    GE: '^995[5-9]\\d{8}$', // Georgia: +995 followed by 9 digits
+    MD: '^373[6-9]\\d{7}$', // Moldova: +373 followed by 8 digits
+    RO: '^40[2-9]\\d{8}$', // Romania: +40 followed by 9 digits
+    BG: '^359[2-9]\\d{7}$', // Bulgaria: +359 followed by 8 digits
+    HR: '^385[9]\\d{7}$', // Croatia: +385 followed by 8 digits
+    RS: '^381[6-9]\\d{7,8}$', // Serbia: +381 followed by 8-9 digits
+    BA: '^387[6-9]\\d{7}$', // Bosnia: +387 followed by 8 digits
+    ME: '^382[6-9]\\d{7}$', // Montenegro: +382 followed by 8 digits
+    MK: '^389[7]\\d{7}$', // North Macedonia: +389 followed by 8 digits
+    AL: '^355[6-9]\\d{7}$', // Albania: +355 followed by 8 digits
+    XK: '^383[4-9]\\d{7}$', // Kosovo: +383 followed by 8 digits
+  };
+
   /**
    * Validates international phone number format
    * @param phoneNumber Phone number to validate
@@ -51,10 +128,17 @@ export class PhoneValidationUtil {
     }
 
     const cleanPhone = phoneNumber.trim();
+    const digits = cleanPhone.slice(1);
 
-    // Extract country code (everything after + until first space or first 2-3 digits)
-    const match = cleanPhone.match(/^\+([1-9]\d{0,2})/);
-    return match ? match[1] : null;
+    // Match the longest known country prefix (1-3 digits)
+    for (let len = Math.min(3, digits.length); len >= 1; len -= 1) {
+      const prefix = digits.slice(0, len);
+      if (Object.values(this.countryPatterns).some((p) => p.startsWith(`^${prefix}`))) {
+        return prefix;
+      }
+    }
+
+    return null;
   }
 
   /**
@@ -75,93 +159,15 @@ export class PhoneValidationUtil {
       return false;
     }
 
-    // Basic country code validation
-    const countryPatterns: { [key: string]: string } = {
-      US: '^1[2-9]\d{9}$', // US: +1 followed by 10 digits
-      GB: '^44[1-9]\d{8,9}$', // UK: +44 followed by 9-10 digits
-      CA: '^1[2-9]\d{9}$', // Canada: +1 followed by 10 digits
-      AU: '^61[2-9]\d{8}$', // Australia: +61 followed by 9 digits
-      DE: '^49[1-9]\d{8,11}$', // Germany: +49 followed by 9-12 digits
-      FR: '^33[1-9]\d{8}$', // France: +33 followed by 9 digits
-      IT: '^39[3-9]\d{8,10}$', // Italy: +39 followed by 9-11 digits
-      ES: '^34[6-9]\d{8}$', // Spain: +34 followed by 9 digits
-      NL: '^31[6-9]\d{8}$', // Netherlands: +31 followed by 9 digits
-      BE: '^32[4-9]\d{7,8}$', // Belgium: +32 followed by 8-9 digits
-      CH: '^41[7-9]\d{8}$', // Switzerland: +41 followed by 9 digits
-      AT: '^43[6-9]\d{8,11}$', // Austria: +43 followed by 9-12 digits
-      SE: '^46[7-9]\d{8}$', // Sweden: +46 followed by 9 digits
-      NO: '^47[4-9]\d{7}$', // Norway: +47 followed by 8 digits
-      DK: '^45[2-9]\d{7}$', // Denmark: +45 followed by 8 digits
-      FI: '^358[4-9]\d{8}$', // Finland: +358 followed by 9 digits
-      IE: '^353[8-9]\d{7,8}$', // Ireland: +353 followed by 8-9 digits
-      PT: '^351[9][1236]\d{7}$', // Portugal: +351 followed by 9 digits
-      GR: '^30[2-9]\d{9}$', // Greece: +30 followed by 10 digits
-      TR: '^90[5]\d{9}$', // Turkey: +90 followed by 10 digits
-      IL: '^972[5]\d{8}$', // Israel: +972 followed by 9 digits
-      SA: '^966[5]\d{8}$', // Saudi Arabia: +966 followed by 9 digits
-      AE: '^971[5]\d{8}$', // UAE: +971 followed by 9 digits
-      IN: '^91[6-9]\d{9}$', // India: +91 followed by 10 digits
-      PK: '^92[3]\d{9}$', // Pakistan: +92 followed by 10 digits
-      BD: '^880[1-9]\d{9}$', // Bangladesh: +880 followed by 10 digits
-      LK: '^94[7]\d{8}$', // Sri Lanka: +94 followed by 9 digits
-      NP: '^977[9]\d{8}$', // Nepal: +977 followed by 9 digits
-      TH: '^66[8-9]\d{8}$', // Thailand: +66 followed by 9 digits
-      VN: '^84[3-9]\d{8}$', // Vietnam: +84 followed by 9 digits
-      MY: '^60[1-9]\d{8,9}$', // Malaysia: +60 followed by 9-10 digits
-      SG: '^65[6-9]\d{7}$', // Singapore: +65 followed by 8 digits
-      PH: '^63[9]\d{9}$', // Philippines: +63 followed by 10 digits
-      ID: '^62[8]\d{9,11}$', // Indonesia: +62 followed by 10-12 digits
-      JP: '^81[7-9]\d{8}$', // Japan: +81 followed by 9 digits
-      KR: '^82[1-9]\d{8,9}$', // South Korea: +82 followed by 9-10 digits
-      CN: '^86[1-9]\d{10}$', // China: +86 followed by 11 digits
-      HK: '^852[5-9]\d{7}$', // Hong Kong: +852 followed by 8 digits
-      TW: '^886[9]\d{8}$', // Taiwan: +886 followed by 9 digits
-      NZ: '^64[2-9]\d{7,9}$', // New Zealand: +64 followed by 8-10 digits
-      ZA: '^27[6-8]\d{8}$', // South Africa: +27 followed by 9 digits
-      EG: '^20[1-9]\d{9}$', // Egypt: +20 followed by 10 digits
-      NG: '^234[7-9]\d{8}$', // Nigeria: +234 followed by 10 digits
-      KE: '^254[7]\d{8}$', // Kenya: +254 followed by 9 digits
-      GH: '^233[2-9]\d{8}$', // Ghana: +233 followed by 9 digits
-      UG: '^256[3-9]\d{8}$', // Uganda: +256 followed by 9 digits
-      TZ: '^255[6-7]\d{8}$', // Tanzania: +255 followed by 9 digits
-      MX: '^52[1-9]\d{9}$', // Mexico: +52 followed by 10 digits
-      BR: '^55[1-9]\d{9,10}$', // Brazil: +55 followed by 10-11 digits
-      AR: '^54[9]\d{8}$', // Argentina: +54 followed by 10 digits
-      CL: '^56[9]\d{8}$', // Chile: +56 followed by 9 digits
-      CO: '^57[3]\d{9}$', // Colombia: +57 followed by 10 digits
-      PE: '^51[9]\d{8}$', // Peru: +51 followed by 9 digits
-      VE: '^58[4]\d{9}$', // Venezuela: +58 followed by 10 digits
-      RU: '^7[9]\d{9}$', // Russia: +7 followed by 10 digits
-      UA: '^380[3-9]\d{8}$', // Ukraine: +380 followed by 9 digits
-      BY: '^375[2-9]\d{8}$', // Belarus: +375 followed by 9 digits
-      KZ: '^7[6-7]\d{9}$', // Kazakhstan: +7 followed by 10 digits
-      UZ: '^998[9]\d{8}$', // Uzbekistan: +998 followed by 9 digits
-      AM: '^374[3-9]\d{7}$', // Armenia: +374 followed by 8 digits
-      AZ: '^994[4-9]\d{8}$', // Azerbaijan: +994 followed by 9 digits
-      GE: '^995[5-9]\d{8}$', // Georgia: +995 followed by 9 digits
-      MD: '^373[6-9]\d{7}$', // Moldova: +373 followed by 8 digits
-      RO: '^40[2-9]\d{8}$', // Romania: +40 followed by 9 digits
-      BG: '^359[2-9]\d{7}$', // Bulgaria: +359 followed by 8 digits
-      HR: '^385[9]\d{7}$', // Croatia: +385 followed by 8 digits
-      RS: '^381[6-9]\d{7,8}$', // Serbia: +381 followed by 8-9 digits
-      BA: '^387[6-9]\d{7}$', // Bosnia: +387 followed by 8 digits
-      ME: '^382[6-9]\d{7}$', // Montenegro: +382 followed by 8 digits
-      MK: '^389[7]\d{7}$', // North Macedonia: +389 followed by 8 digits
-      AL: '^355[6-9]\d{7}$', // Albania: +355 followed by 8 digits
-      XK: '^383[4-9]\d{7}$', // Kosovo: +383 followed by 8 digits
-    };
-
-    // Remove the country code from the phone number for pattern matching
-    const phoneNumberWithoutCountry = cleanPhone.substring(extractedCountryCode.length + 1);
-    const pattern = countryPatterns[countryCode.toUpperCase()];
+    const pattern = this.countryPatterns[countryCode.toUpperCase()];
 
     if (!pattern) {
       // If no specific pattern for the country, use general validation
       return true;
     }
 
-    const fullPattern = `^${extractedCountryCode}${pattern.substring(1)}`;
-    return new RegExp(fullPattern).test(cleanPhone);
+    // Test the country pattern against the digit portion (without the leading '+')
+    return new RegExp(pattern).test(cleanPhone.slice(1));
   }
 
   /**

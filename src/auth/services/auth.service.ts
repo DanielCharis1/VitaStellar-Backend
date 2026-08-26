@@ -63,6 +63,8 @@ export class AuthService {
     private readonly tokenRevocationService: TokenRevocationService,
     @Optional() private readonly referralService?: ReferralService
   ) {
+    // Keep TOTP window consistent with TwoFactorService so enable and login checks agree
+    authenticator.options = { window: 1 };
     this.redisClient = createClient({
       url: process.env.REDIS_URL || 'redis://localhost:6379',
     });
@@ -174,29 +176,42 @@ export class AuthService {
 
   async enableTwoFactor(userId: string, code?: string) {
     const user = await this.usersService.findById(userId);
-    const secret = authenticator.generateSecret();
-    user.twoFactorSecret = secret;
 
-    if (code) {
-      if (!authenticator.check(code, secret)) {
-        throw new BadRequestException('Invalid authentication code');
-      }
-      user.twoFactorEnabled = true;
+    // Step 1 (setup): no code supplied — generate and persist a fresh secret, then return its QR.
+    // Re-running setup rotates the secret, invalidating any previously scanned QR.
+    if (!code) {
+      const secret = authenticator.generateSecret();
+      user.twoFactorSecret = secret;
+      user.twoFactorEnabled = false;
       await this.usersService.save(user);
-      return { message: 'Two-factor authentication enabled successfully', enabled: true };
+
+      const otpauthUrl = authenticator.keyuri(user.email || userId, 'VitaStellar', secret);
+      const qrCode = await qrcode.toDataURL(otpauthUrl);
+
+      return {
+        secret,
+        qrCode,
+        otpauthUrl,
+        enabled: false,
+        message: 'Scan the QR code with your authenticator app, then confirm with a TOTP code',
+      };
     }
 
-    await this.usersService.save(user);
-    const otpauthUrl = authenticator.keyuri(user.email || userId, 'VitaStellar', secret);
-    const qrCode = await qrcode.toDataURL(otpauthUrl);
+    // Step 2 (confirm): validate the code against the secret persisted during setup.
+    if (!user.twoFactorSecret) {
+      throw new BadRequestException(
+        'Two-factor authentication is not set up. Scan the QR code and confirm with a TOTP code first.'
+      );
+    }
 
-    return {
-      secret,
-      qrCode,
-      otpauthUrl,
-      enabled: false,
-      message: 'Scan the QR code with your authenticator app, then confirm with a TOTP code',
-    };
+    if (!authenticator.check(code, user.twoFactorSecret)) {
+      throw new BadRequestException('Invalid authentication code');
+    }
+
+    user.twoFactorEnabled = true;
+    await this.usersService.save(user);
+
+    return { message: 'Two-factor authentication enabled successfully', enabled: true };
   }
 
   async disableTwoFactor(userId: string, code: string) {
@@ -300,7 +315,10 @@ export class AuthService {
     const tokenId = crypto.randomUUID();
     const refreshExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
-    const accessToken = this.jwtService.sign({ sub: userId, email, role, tokenId }, { expiresIn: '15m' });
+    const accessToken = this.jwtService.sign(
+      { sub: userId, email, role, tokenId },
+      { expiresIn: '15m' }
+    );
     const refreshToken = this.jwtService.sign(
       { sub: userId, email, role, tokenId },
       { expiresIn: '7d' }
@@ -564,7 +582,10 @@ export class AuthService {
         this.logger.error(`User ${user.id} has twoFactorEnabled but no secret stored`);
         throw new InternalServerErrorException('Two-factor configuration is incomplete');
       }
-      if (!verifyOtpDto.totpCode || !authenticator.check(verifyOtpDto.totpCode, fullUser.twoFactorSecret)) {
+      if (
+        !verifyOtpDto.totpCode ||
+        !authenticator.check(verifyOtpDto.totpCode, fullUser.twoFactorSecret)
+      ) {
         throw new UnauthorizedException('Invalid two-factor authentication code');
       }
     }

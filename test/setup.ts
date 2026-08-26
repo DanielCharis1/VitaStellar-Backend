@@ -97,10 +97,13 @@ export const testDatabaseConfig = {
       process.env.DATABASE_NAME ||
       'vitastellar_test',
   entities: [process.cwd() + '/src/**/*.entity.{ts,js}'],
-  migrations: isSqliteTest ? [] : ['src/migrations/*{.ts,.js}'],
+  // Build the schema from entities (synchronize) instead of the migration set:
+  // the migration set does not cover the full entity graph (e.g. task_activity),
+  // so migrations-only setup cannot initialize the test database.
+  migrations: [],
   migrationsTableName: 'migrations',
-  synchronize: isSqliteTest,
-  dropSchema: isSqliteTest,
+  synchronize: true,
+  dropSchema: true,
   logging: process.env.TEST_DB_LOGGING === 'true',
   ssl: false,
   extra: {

@@ -4,6 +4,7 @@ import { AdminService } from './services/admin.service';
 import { TasksScheduler } from '@/tasks/tasks.scheduler';
 import { RewardsScheduler } from '@/rewards/rewards.scheduler';
 import { CacheService } from '@/shared/cache/cache.service';
+import { ReportsService } from '../reports/reports.service';
 
 describe('AdminController', () => {
   let controller: AdminController;
@@ -31,6 +32,7 @@ describe('AdminController', () => {
         { provide: AdminService, useValue: adminService },
         { provide: TasksScheduler, useValue: {} },
         { provide: RewardsScheduler, useValue: {} },
+        { provide: ReportsService, useValue: {} },
         { provide: CacheService, useValue: cacheService },
       ],
     }).compile();

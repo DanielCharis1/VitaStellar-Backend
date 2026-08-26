@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner, TableIndex } from 'typeorm';
 
-export class AddUserSearchIndexes1234567890 implements MigrationInterface {
+export class AddUserSearchIndexes1775100000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Create indexes for optimized search performance
     const indexes: TableIndex[] = [
@@ -159,7 +159,7 @@ export class AddUserSearchIndexes1234567890 implements MigrationInterface {
         CREATE INDEX IF NOT EXISTS "IDX_USER_EMAIL_TRIGRAM" 
         ON "users" USING gin (email gin_trgm_ops);
       `);
-    } catch (error) {
+    } catch {
       // Trigram extension not available (not PostgreSQL or no permissions)
       // This is not critical, fuzzy matching will still work but may be slower
     }
@@ -177,7 +177,7 @@ export class AddUserSearchIndexes1234567890 implements MigrationInterface {
           )
         );
       `);
-    } catch (error) {
+    } catch {
       // Full-text search not available, will use ILIKE instead
     }
   }
@@ -217,7 +217,7 @@ export class AddUserSearchIndexes1234567890 implements MigrationInterface {
     for (const indexName of indexNames) {
       try {
         await queryRunner.dropIndex('users', indexName);
-      } catch (error) {
+      } catch {
         // Index might not exist, continue with others
       }
     }
@@ -225,7 +225,7 @@ export class AddUserSearchIndexes1234567890 implements MigrationInterface {
     // Drop trigram extension (PostgreSQL specific)
     try {
       await queryRunner.query(`DROP EXTENSION IF EXISTS pg_trgm;`);
-    } catch (error) {
+    } catch {
       // Extension might not exist or no permissions
     }
   }

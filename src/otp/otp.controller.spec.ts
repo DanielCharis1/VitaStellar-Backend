@@ -1,7 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { HttpStatus } from '@nestjs/common';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { OtpController } from './otp.controller';
 import { OtpService } from './otp.service';
+import { RateLimitGuard } from '../common/guards/rate-limit.guard';
 
 describe('OtpController', () => {
   let controller: OtpController;
@@ -14,11 +16,16 @@ describe('OtpController', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
+      imports: [ThrottlerModule.forRoot([{ ttl: 60000, limit: 10 }])],
       controllers: [OtpController],
       providers: [
         {
           provide: OtpService,
           useValue: mockOtpService,
+        },
+        {
+          provide: RateLimitGuard,
+          useValue: { canActivate: jest.fn().mockReturnValue(true) },
         },
       ],
     }).compile();
