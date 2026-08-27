@@ -9,8 +9,13 @@ export class CsrfMiddleware implements NestMiddleware {
   private readonly headerName = 'x-csrf-token';
 
   use(req: Request, res: Response, next: NextFunction) {
+    // req.cookies is only populated when a cookie-parsing middleware (cookie-parser)
+    // has run before this middleware. Treat a missing/empty cookies object as a
+    // new session so we never crash on an undefined read.
+    const cookies = req.cookies ?? {};
+
     // Generate CSRF token for new sessions
-    if (!req.cookies[this.cookieName]) {
+    if (!cookies[this.cookieName]) {
       const token = this.generateToken();
       res.cookie(this.cookieName, token, {
         httpOnly: false, // Allow JavaScript access for SPAs
@@ -20,7 +25,7 @@ export class CsrfMiddleware implements NestMiddleware {
       });
       req.csrfToken = token;
     } else {
-      req.csrfToken = req.cookies[this.cookieName];
+      req.csrfToken = cookies[this.cookieName];
     }
 
     // Skip CSRF validation for safe methods

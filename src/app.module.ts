@@ -43,6 +43,7 @@ import { AppCacheModule } from './shared/cache/cache.module';
 import { RewardModule } from './rewards/reward.module';
 import { ReferralModule } from './referral/referral.module';
 import { HealthProfileModule } from './users/health-profile/health-profile.module';
+import { StreaksModule } from './streaks/streaks.module';
 
 @Module({
   imports: [
@@ -90,6 +91,7 @@ import { HealthProfileModule } from './users/health-profile/health-profile.modul
     RewardModule,
     ReferralModule,
     HealthProfileModule,
+    StreaksModule,
   ],
   controllers: [AppController],
   providers: [

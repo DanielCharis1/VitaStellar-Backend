@@ -3,11 +3,25 @@ import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { UserResponseDto } from './dto/user-response.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
+import { NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 describe('UsersController', () => {
   let controller: UsersController;
   let service: UsersService;
+
+  it('is guarded by the real JwtAuthGuard (no mock guard)', () => {
+    const guards = Reflect.getMetadata('__guards__', UsersController) || [];
+    expect(guards).toContain(JwtAuthGuard);
+    // Ensure the guard is the real passport guard, not a local mock
+    expect(guards.some((guard: any) => guard.name === 'JwtAuthGuard')).toBe(true);
+    expect(guards.some((guard: any) => guard.prototype?.canActivate)).toBe(true);
+  });
+
+  it('throws ForbiddenException when the authenticated user context is missing', async () => {
+    const req = { user: undefined } as any;
+    await expect(controller.getProfile(req)).rejects.toThrow(ForbiddenException);
+  });
 
   const mockUser = {
     id: 'test-user-id',
