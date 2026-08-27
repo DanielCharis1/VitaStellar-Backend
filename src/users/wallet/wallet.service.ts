@@ -143,6 +143,9 @@ export class WalletService {
     // 5. Invalidate cache
     await this.invalidateCache({ userId });
 
+    // 6. Notify listeners so pending rewards can be retried
+    this.eventEmitter.emit('wallet.linked', { userId, address });
+
     this.logger.log(`Wallet linked: ${address} for user ${userId}`);
     return updatedUser;
   }
