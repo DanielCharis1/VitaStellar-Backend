@@ -102,7 +102,7 @@ export class User {
   @DeleteDateColumn({ type: 'timestamp', nullable: true, name: 'deleted_at' })
   deletedAt?: Date | null;
 
-  @Column({ nullable: true, unique: true })
+  @Column({ type: 'varchar', length: 8, nullable: true, unique: true })
   referralCode?: string | null;
 
   @Column({ type: 'boolean', default: false })
