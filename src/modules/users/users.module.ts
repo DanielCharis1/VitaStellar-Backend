@@ -16,6 +16,7 @@ import { DataExportDownloadController } from './controllers/data-export-download
 import { UsersService } from './users.service';
 import { QueueModule } from '../../queue/queue.module';
 import { ActivityTrackerService } from './services/activity-tracker.service';
+import { ActivityFeedService } from './services/activity-feed.service';
 import { AvatarService } from './services/avatar.service';
 import { DataExportService } from './services/data-export.service';
 import { DataExportProcessor } from './processors/data-export.processor';
@@ -64,6 +65,7 @@ import { StorageModule } from '../../shared/storage/storage.module';
     PhoneVerificationService,
     SmsService,
     ActivityTrackerService,
+    ActivityFeedService,
     AvatarService,
     DataExportService,
     DataExportProcessor,

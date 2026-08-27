@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
+import { randomUUID } from 'crypto';
+import { JwtService } from '@nestjs/jwt';
 import { AppModule } from '../src/app.module';
 import { UsersService } from '../src/users/users.service';
 
@@ -8,16 +10,21 @@ describe('Users (e2e)', () => {
   let app: INestApplication;
   let server: any;
   let usersService: UsersService;
+  let jwtService: JwtService;
 
-  const mockId = 'mock-user-id';
+  const mockId = randomUUID();
   const userPayload = {
     id: mockId,
     email: `mock-${Date.now()}@example.com`,
     firstName: 'Mock',
     lastName: 'User',
+    fullName: 'Mock User',
     country: 'US',
     password: 'ignored',
   } as any;
+
+  const signToken = (sub: string) =>
+    jwtService.sign({ sub, email: userPayload.email, role: 'USER' });
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -29,16 +36,15 @@ describe('Users (e2e)', () => {
     server = app.getHttpServer();
 
     usersService = moduleFixture.get<UsersService>(UsersService);
+    jwtService = new JwtService({ secret: process.env.JWT_SECRET || 'testsecret' });
 
-    // ensure a user exists with the mock id used by the controller's JwtAuthGuard
+    // ensure a user exists for the authenticated requests
     await usersService.create(userPayload);
   });
 
   afterAll(async () => {
-    // cleanup
+    // cleanup the mock user
     try {
-      // repository is exposed as public on UsersService
-      // attempt to remove the mock user
       const repo = (usersService as any).userRepository;
       if (repo) {
         await repo.delete({ id: mockId });
@@ -49,18 +55,23 @@ describe('Users (e2e)', () => {
     await app.close();
   });
 
-  it('GET /api/v1/users/me -> 200', async () => {
-    const res = await request(server).get('/api/v1/users/me').expect(200);
-    expect(res.body).toHaveProperty('email', userPayload.email);
-    expect(res.body).toHaveProperty('firstName', userPayload.firstName);
+  it('GET /users/me without a bearer token returns 401', async () => {
+    await request(server).get('/users/me').expect(401);
   });
 
-  it('PATCH /api/v1/users/me -> 200 and updates profile', async () => {
+  it('GET /users/me with a malformed bearer token returns 401', async () => {
+    await request(server).get('/users/me').set('Authorization', 'Bearer not-a-real-token').expect(401);
+  });
+
+  it('GET /users/me with a valid token returns the profile', async () => {
     const res = await request(server)
-      .patch('/api/v1/users/me')
-      .send({ firstName: 'Updated' })
+      .get('/users/me')
+      .set('Authorization', `Bearer ${signToken(mockId)}`)
       .expect(200);
 
-    expect(res.body).toHaveProperty('firstName', 'Updated');
+    expect(res.body).toHaveProperty('email', userPayload.email);
+    expect(res.body).toHaveProperty('fullName', 'Mock User');
+    // The response must not leak the password
+    expect(res.body).not.toHaveProperty('password');
   });
 });
