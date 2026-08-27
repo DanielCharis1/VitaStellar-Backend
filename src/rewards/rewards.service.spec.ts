@@ -9,6 +9,7 @@ import { RewardStatus } from './enums/reward-status.enum';
 import { TaskCompletion } from '../tasks/entities/task-completion.entity';
 import { HealthTask } from '../entities/health-task.entity';
 import { User } from '../entities/user.entity';
+import { UserMilestone } from './entities/user-milestone.entity';
 import { StellarService } from '../stellar/stellar.service';
 import {
   REWARD_QUEUE,
@@ -46,6 +47,12 @@ describe('RewardService', () => {
     findOne: jest.fn(),
   };
 
+  const mockUserMilestoneRepo = {
+    find: jest.fn().mockResolvedValue([]),
+    create: jest.fn(),
+    save: jest.fn(),
+  };
+
   const mockStellarService = {
     sendPayment: jest.fn(),
   };
@@ -74,6 +81,7 @@ describe('RewardService', () => {
         { provide: getRepositoryToken(TaskCompletion), useValue: mockTaskCompletionRepo },
         { provide: getRepositoryToken(HealthTask), useValue: mockHealthTaskRepo },
         { provide: getRepositoryToken(User), useValue: mockUserRepo },
+        { provide: getRepositoryToken(UserMilestone), useValue: mockUserMilestoneRepo },
         { provide: CACHE_MANAGER, useValue: mockCacheManager },
         { provide: getQueueToken(REWARD_QUEUE), useValue: mockRewardQueue },
         { provide: EventEmitter2, useValue: mockEventEmitter },
