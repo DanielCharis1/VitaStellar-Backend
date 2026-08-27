@@ -82,6 +82,7 @@ describe('RewardService', () => {
         { provide: getRepositoryToken(HealthTask), useValue: mockHealthTaskRepo },
         { provide: getRepositoryToken(UserMilestone), useValue: mockUserMilestoneRepo },
         { provide: getRepositoryToken(User), useValue: mockUserRepo },
+        { provide: getRepositoryToken(UserMilestone), useValue: mockUserMilestoneRepo },
         { provide: CACHE_MANAGER, useValue: mockCacheManager },
         { provide: getQueueToken(REWARD_QUEUE), useValue: mockRewardQueue },
         { provide: EventEmitter2, useValue: mockEventEmitter },

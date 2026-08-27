@@ -54,7 +54,11 @@ export class SlowQueryLogger implements TypeOrmLogger {
     if (this.production) {
       return;
     }
-    this.logger[level === 'log' ? 'log' : level](String(message));
+    // TypeORM emits "info" (e.g. "Using ts-node..." when loading entities
+    // under ts-node/ts-jest); Nest's Logger has no "info" method, so map it
+    // to "log" instead of crashing on boot.
+    const method = level === 'info' ? 'log' : level;
+    this.logger[method](String(message));
   }
 }
 

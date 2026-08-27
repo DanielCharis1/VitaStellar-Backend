@@ -38,9 +38,13 @@ export class RewardService {
     private readonly userMilestoneRepository: Repository<UserMilestone>,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(UserMilestone)
+    private readonly userMilestoneRepository: Repository<UserMilestone>,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     @InjectQueue(REWARD_QUEUE) private readonly rewardQueue: Queue,
     private readonly eventEmitter: EventEmitter2,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
     private readonly stellarService: StellarService
   ) {}
 
