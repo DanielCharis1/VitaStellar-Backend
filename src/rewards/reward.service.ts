@@ -105,6 +105,49 @@ export class RewardService {
     }
   }
 
+  /**
+   * Re-enqueue reward jobs for all PENDING reward transactions belonging
+   * to a user. Called after the user links a Stellar wallet so previously
+   * stranded payouts can be retried.
+   *
+   * The idempotency guard in processRewardJob (SUCCESS check on
+   * taskCompletionId) ensures already-paid completions are not double-paid.
+   */
+  async retryPendingRewardsForUser(userId: string): Promise<number> {
+    const pendingTransactions = await this.rewardTransactionRepository.find({
+      where: { userId, status: RewardStatus.PENDING },
+    });
+
+    let enqueued = 0;
+    for (const tx of pendingTransactions) {
+      // Only re-enqueue completions with a taskCompletionId
+      if (!tx.taskCompletionId) continue;
+
+      await this.rewardQueue.add(REWARD_DISTRIBUTION_JOB, {
+        completionId: tx.taskCompletionId,
+        userId,
+        xlmAmount: tx.amount,
+      });
+      enqueued++;
+    }
+
+    if (enqueued > 0) {
+      this.logger.log(
+        `Re-enqueued ${enqueued} pending reward job(s) for user ${userId} after wallet link`,
+      );
+    }
+
+    return enqueued;
+  }
+
+  @OnEvent('wallet.linked')
+  async handleWalletLinked(payload: { userId: string; address: string }) {
+    this.logger.log(
+      `Wallet linked for user ${payload.userId}; retrying pending rewards`,
+    );
+    await this.retryPendingRewardsForUser(payload.userId);
+  }
+
   async getRewardHistory(
     userId: string,
     queryDto: RewardHistoryQueryDto
@@ -244,6 +287,9 @@ export class RewardService {
       throw new Error(
         `User ${userId} has no linked Stellar wallet address; cannot complete payout`
       );
+      transaction.status = RewardStatus.PENDING;
+      await this.rewardTransactionRepository.save(transaction);
+      return;
     }
 
     try {
